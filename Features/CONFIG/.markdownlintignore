@@ -1,0 +1,12 @@
+# Ignore build directory
+/Build/
+
+# Ignore external dependencies
+*_extdep/
+
+# Ignore cloned dependencies
+/Common/MU_TIANO
+/MU_BASECORE
+
+# Ignore Corporate Security MD
+SECURITY.md

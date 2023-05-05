@@ -1,0 +1,17 @@
+## @file
+# CodeQL Result Filters for Packages in Mu Basecore
+#
+# Note: Packages that use Mu Tiano Plus can reuse this file to quickly pick up the
+#       same filters applied to results in the Mu Tiano Plus repo.
+#
+# Copyright (c) Microsoft Corporation
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+{
+  "Filters": [
+    # The NULL value passed in this file is expected by the callee
+    "-FmpDevicePkg/FmpDxe/FmpDxe.c:SM02311",
+    "-SourceLevelDebugPkg/Library/DebugAgent/DxeDebugAgent/DxeDebugAgentLib.c:SM02311",
+  ]
+}

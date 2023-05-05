@@ -1,0 +1,51 @@
+## @file
+# Azure Pipeline build file to perform a release in this repo.
+#
+# Note: This file should be invoked immediately after a release has been published
+#       on GitHub.
+#
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+trigger: none
+pr: none
+
+resources:
+  repositories:
+    - repository: mu_devops
+      type: github
+      endpoint: microsoft
+      name: microsoft/mu_devops
+      ref: refs/tags/v2.3.0
+
+name: $(Date:yyyyMMdd)$(Rev:.r) Mu Tiano Platforms Release
+
+stages:
+- stage: BuildQemuPlatforms
+  displayName: Build QEMU Platforms
+  jobs:
+    - template: Platform-Build-Job.yml
+      parameters:
+          extra_install_step:
+                - script: sudo dnf --assumeyes install openssl-devel
+                  displayName: Install openssl
+          container_image: ghcr.io/tianocore/containers/fedora-37-test:54e5bd1
+          tool_chain_tag: GCC5
+          vm_image: ubuntu-latest
+
+    - template: Platform-Build-Job.yml
+      parameters:
+          extra_install_step:
+          - powershell: choco install qemu --version=2022.8.31; Write-Host "##vso[task.prependpath]c:\Program Files\qemu"
+            displayName: Install QEMU and Set QEMU on path
+            condition: and(gt(variables.pkg_count, 0), succeeded())
+          tool_chain_tag: VS2022
+          vm_image: windows-latest
+
+- stage: PublishReleaseArtifacts
+  displayName: Publish Release Artifacts
+  dependsOn:
+  - BuildQemuPlatforms
+  jobs:
+    - template: templates/Job-Publish.yml

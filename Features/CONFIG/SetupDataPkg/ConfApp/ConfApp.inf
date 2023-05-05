@@ -1,0 +1,76 @@
+## @file
+# Configuration app to support applying configuration data through UEFI application
+# and displaying other basic information.
+#
+# Copyright (C) Microsoft Corporation.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION       = 0x00010017
+  BASE_NAME         = ConfApp
+  FILE_GUID         = E3624086-4FCD-446E-9D07-B6B913792071
+  VERSION_STRING    = 1.0
+  MODULE_TYPE       = UEFI_APPLICATION
+  ENTRY_POINT       = ConfAppEntry
+
+[Sources]
+  BootOptions.c
+  ConfApp.c
+  ConfApp.h
+  SecureBoot.c
+  SetupConf.c
+  SystemInfo.c
+  SvdUsb/SvdUsb.c
+  SvdUsb/SvdUsb.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  SetupDataPkg/SetupDataPkg.dec
+  PcBdsPkg/PcBdsPkg.dec
+  MsCorePkg/MsCorePkg.dec
+  XmlSupportPkg/XmlSupportPkg.dec
+  SecurityPkg/SecurityPkg.dec
+  PolicyServicePkg/PolicyServicePkg.dec
+
+[LibraryClasses]
+  BaseLib
+  UefiApplicationEntryPoint
+  DebugLib
+  UefiRuntimeServicesTableLib
+  MemoryAllocationLib
+  UefiLib
+  ResetSystemLib
+  UefiBootManagerLib
+  MuSecureBootKeySelectorLib
+  SecureBootKeyStoreLib
+  JsonLiteParserLib
+  FileHandleLib
+  XmlTreeLib
+  XmlTreeQueryLib
+  SvdXmlSettingSchemaSupportLib
+  PerformanceLib
+  ConfigSystemModeLib
+  ConfigVariableListLib
+
+[Guids]
+  gMuVarPolicyDxePhaseGuid
+  gEfiEventReadyToBootGuid
+
+[Pcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxVariableSize
+  gSetupDataPkgTokenSpaceGuid.PcdConfigurationFileName
+  gSetupDataPkgTokenSpaceGuid.PcdConfigurationPolicyGuid
+
+[Protocols]
+  gEfiSimpleTextInputExProtocolGuid
+  gEfiBlockIoProtocolGuid
+  gEfiUsbIoProtocolGuid
+  gEfiFirmwareManagementProtocolGuid
+  gPolicyProtocolGuid
+
+[Depex]
+  gEfiVariableWriteArchProtocolGuid AND
+  gPolicyProtocolGuid

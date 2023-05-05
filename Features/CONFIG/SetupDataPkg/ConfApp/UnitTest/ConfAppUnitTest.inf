@@ -1,0 +1,55 @@
+## @file
+# Unit tests of the main page of ConfApp module
+#
+# Copyright (C) Microsoft Corporation.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = ConfAppUnitTest
+  FILE_GUID                      = 38B91BC3-D0B3-4177-8E7D-D87DBBD7F2C0
+  MODULE_TYPE                    = HOST_APPLICATION
+  VERSION_STRING                 = 1.0
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64
+#
+
+[Sources]
+  ConfAppUnitTest.c
+  ConInConOut.c
+  ConfAppUnitTestCommon.c
+  ../ConfApp.c
+  ../ConfApp.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  UnitTestFrameworkPkg/UnitTestFrameworkPkg.dec
+  MsCorePkg/MsCorePkg.dec
+  SecurityPkg/SecurityPkg.dec
+  SetupDataPkg/SetupDataPkg.dec
+
+[LibraryClasses]
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  UnitTestLib
+  PrintLib
+  ResetSystemLib
+  SecureBootKeyStoreLib
+  PerformanceLib
+  ConfigSystemModeLib
+
+[Protocols]
+  gEdkiiVariablePolicyProtocolGuid
+  gEfiSimpleTextInputExProtocolGuid
+
+[Guids]
+  gMuVarPolicyDxePhaseGuid
+  gEfiEventReadyToBootGuid

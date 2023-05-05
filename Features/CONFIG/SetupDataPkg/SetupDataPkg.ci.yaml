@@ -1,0 +1,100 @@
+## @file
+# CI configuration for SetupDataPkg
+#
+# Copyright (c) Microsoft Corporation
+# Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+{
+    "LicenseCheck": {
+        "IgnoreFiles": []
+    },
+    "EccCheck": {
+        ## Exception sample looks like below:
+        ## "ExceptionList": [
+        ##     "<ErrorID>", "<KeyWord>"
+        ## ]
+        "ExceptionList": [
+        ],
+        ## Both file path and directory path are accepted.
+        "IgnoreFiles": [
+        ]
+    },
+    "CompilerPlugin": {
+        "DscPath": "SetupDataPkg.dsc"
+    },
+    ## options defined .pytool/Plugin/HostUnitTestCompilerPlugin
+    "HostUnitTestCompilerPlugin": {
+        "DscPath": "Test/SetupDataPkgHostTest.dsc"
+    },
+    "CharEncodingCheck": {
+        "IgnoreFiles": []
+    },
+    "DependencyCheck": {
+        "AcceptableDependencies": [
+            "MdePkg/MdePkg.dec",
+            "MdeModulePkg/MdeModulePkg.dec",
+            "MsCorePkg/MsCorePkg.dec",
+            "PcBdsPkg/PcBdsPkg.dec",
+            "XmlSupportPkg/XmlSupportPkg.dec",
+            "SecurityPkg/SecurityPkg.dec",
+            "PolicyServicePkg/PolicyServicePkg.dec",
+            "SetupDataPkg/SetupDataPkg.dec"
+        ],
+        # For host based unit tests
+        "AcceptableDependencies-HOST_APPLICATION":[
+            "UnitTestFrameworkPkg/UnitTestFrameworkPkg.dec"
+        ],
+        # For UEFI shell based apps
+        "AcceptableDependencies-UEFI_APPLICATION":[],
+        "IgnoreInf": []
+    },
+    "DscCompleteCheck": {
+        "DscPath": "SetupDataPkg.dsc",
+        "IgnoreInf": []
+    },
+    ## options defined .pytool/Plugin/HostUnitTestDscCompleteCheck
+    "HostUnitTestDscCompleteCheck": {
+        "IgnoreInf": [""],
+        "DscPath": "Test/SetupDataPkgHostTest.dsc"
+    },
+    "GuidCheck": {
+        "IgnoreGuidName": [],
+        "IgnoreGuidValue": [],
+        "IgnoreFoldersAndFiles": [],
+        "IgnoreDuplicates": []
+    },
+    "LibraryClassCheck": {
+        "IgnoreHeaderFile": []
+    },
+
+    ## options defined ci/Plugin/SpellCheck
+    "SpellCheck": {
+        "AuditOnly": False,          # Fails test but run in AuditOnly mode to collect log
+        "IgnoreFiles": [
+          "Test/Include/Good_Config_Data.h"
+        ],           # use gitignore syntax to ignore errors in matching files
+        "ExtendWords": [
+          "basecore",
+          "platformpolicyinit",
+          "CFGHDR",
+          "CFGDATA",
+          "DARKGRAY",
+          "Malformatted",
+          "PLATFORMID",
+          "antlr",
+          "pywin",
+          "privilege",
+          "dmpstore",
+          "mschange",
+          "DDTHH"
+        ],                           # words to extend to the dictionary for this package
+        "IgnoreStandardPaths": [],   # Standard Plugin defined paths that should be ignore
+        "AdditionalIncludePaths": [] # Additional paths to spell check (wildcards supported)
+    },
+
+    "MarkdownLintCheck": {
+        "IgnoreFiles": [
+        ]            # package root relative file, folder, or glob pattern to ignore
+    }
+}

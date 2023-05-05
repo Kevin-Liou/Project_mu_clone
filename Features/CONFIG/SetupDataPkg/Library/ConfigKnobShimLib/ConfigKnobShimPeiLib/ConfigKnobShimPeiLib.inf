@@ -1,0 +1,44 @@
+## @file
+# Library interface for an OEM config policy creator to call into to fetch overrides for config values.
+#
+# Copyright (c) Microsoft Corporation
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION         = 0x00010017
+  BASE_NAME           = ConfigKnobShimPeiLib
+  FILE_GUID           = 9E332BFB-7178-4F49-B88B-9D94B3571B14
+  VERSION_STRING      = 1.0
+  MODULE_TYPE         = PEIM
+  LIBRARY_CLASS       = ConfigKnobShimLib
+
+#
+# The following information is for reference only and not required by the
+# build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 AARCH64
+#
+
+[Sources]
+  ConfigKnobShimPeiLib.c
+  ../ConfigKnobShimLibCommon.c
+  ../ConfigKnobShimLibCommon.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  SetupDataPkg/SetupDataPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  DebugLib
+  BaseMemoryLib
+  PeiServicesLib
+
+[Ppis]
+  gEfiPeiReadOnlyVariable2PpiGuid    ## CONSUMES
+
+[Depex]
+  # Platforms can decide whether variable services are a hard dependency for config or not
+  gEfiPeiReadOnlyVariable2PpiGuid 

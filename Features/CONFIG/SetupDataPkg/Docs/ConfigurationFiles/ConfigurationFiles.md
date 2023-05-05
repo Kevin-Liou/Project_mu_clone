@@ -1,0 +1,221 @@
+# Configuration Files Specification
+
+## Table of Contents
+
+- [Description](#description)
+- [Revision History](#revision-history)
+- [Terms](#terms)
+- [Introduction](#introduction)
+- [XML Specification](#xml-specification)
+
+## Description
+
+This document is intended to describe the Project Mu Configuration XML format.
+
+## Revision History
+
+| Revised by   | Date      | Changes           |
+| ------------ | --------- | ------------------|
+| Kun Qin   | 11/29/2021| First draft |
+| Oliver Smith-Denny | 7/22/2022 | Add YAML/XML Merged Support |
+| Oliver Smith-Denny | 9/15/2022 | Add Profile Support |
+| Oliver Smith-Denny | 2/21/2023 | Update to XML Spec |
+
+## Terms
+
+| Term   | Description                     |
+| ------ | ------------------------------- |
+| UEFI | Unified Extensible Firmware Interface |
+
+## Reference Documents
+
+| Document                                  | Link                                |
+| ----------------------------------------- | ----------------------------------- |
+| Project Mu Documentation | <https://microsoft.github.io/mu/> |
+
+## Introduction
+
+mu_feature_config uses a specific XML schema to describe configuration for a platform. From this XML, change files,
+variable list binaries, and SVD files can be generated to manipulate settings. This file describes the XML format.
+
+## XML Specification
+
+See [sampleschema.xml](../../Tools/sampleschema.xml) for an example XML schema.
+
+Configuration will be organized in namespaces, each consisting of various knobs. Knobs may be built of children knobs
+or be a leaf knob.
+
+Supported data types (and their mapping in UEFI) are:
+
+- uint8_t   (UINT8)
+- int8_t    (INT8)
+- uint16_t  (UINT16)
+- int16_t   (INT16)
+- uint32_t  (UINT32)
+- int32_t   (INT32)
+- uint64_t  (UINT64)
+- int64_t   (INT64)
+- float     (float)
+- double    (double)
+- bool      (BOOLEAN)
+
+In addition, user defined enums and structs can be created. Structs will be packed and enums resolve to a series of
+INT32s.
+
+### User Defined Enums
+
+A `Enums` block can be added to define enums (which resolve to INT32s) for a platform, as follows:
+
+```xml
+  <Enums>
+    <Enum name="OPTION_MODE" help="Modes of the option">
+      <Value name="FIRST" value="0" help="First mode" />
+      <Value name="SECOND" value="1" help="Second mode" />
+      <Value name="THIRD" value="2" help="Third mode" />
+    </Enum>
+  </Enums>
+```
+
+### User Defined Structs
+
+A `<Structs>` block can be added to define structures for a platform, as shown below. These structs can have basic types,
+enums, and other structs as members. Structs are packed into the `CONFIG_VAR_LIST_HDR` (and comments within for
+the variable length pieces of the structure) structure defined [here](../../Include/Library/ConfigVariableListLib.h).
+
+```xml
+  <Structs>
+    <Struct name="simple_t" help="Simple struct">
+      <Member name="value" count="2" type="uint32_t" />
+    </Struct>
+    <Struct name="child_t" help="Embedded struct">
+      <Member name="data" type="uint8_t" count="5" help="Bytes" />
+      <Member name="mode" type="OPTION_MODE" />
+    </Struct>
+    <Struct name="sample_t" help="Sample struct">
+      <Member name="counter" type="uint32_t" help="Number value" />
+      <Member name="children" type="child_t" count="2" help="Child data" />
+    </Struct>
+  </Structs>
+```
+
+### User Defined Knobs
+
+The `Knobs` section of the XML is required, as without it no knobs will be defined. Furthermore, the namespace of the
+knobs is required to properly be able to store them as UEFI variables if config overrides occur. The knobs may be of
+user defined enums, structs, or basic types.
+
+```xml
+  <!-- namespace indicates the GUID namespace the values are stored in -->
+  <Knobs namespace="{FE3ED49F-B173-41ED-9076-356661D46A42}">
+    <!-- Example knobs of different types -->
+
+    <Knob name="COMPLEX_KNOB1a" type="child_t" default="{{1,2,3, 4,5 },FIRST }" help="Complex knob" />
+    
+    <Knob name="COMPLEX_KNOB1b" type="child_t" default="{{1,2,3, 4,5 },SECOND }" help="Complex type" />
+
+    <Knob name="COMPLEX_KNOB2" type="sample_t" default="{2,{{{1,2,3, 4,5 },FIRST },{{6,7,8, 9,10 },SECOND }}}" help="Complex type" />
+
+    <Knob name="INTEGER_KNOB" type="uint32_t" default="100" help="Integer type" />
+    <Knob name="BOOLEAN_KNOB" type="bool" default="true" help="Boolean type" />
+    <Knob name="DOUBLE_KNOB" type="double" default="3.1415926" help="Double type" />
+    <Knob name="FLOAT_KNOB" type="float" default="1.414" help="Float type" />
+
+  </Knobs>
+```
+
+### Defaults
+
+Default values for the knobs (equivalent to the generic profile) can be defined using the `default` keyword, either in
+the enum/struct member definition or in the knob definition. It is required in one of those two places. Struct
+defaults are encapsulated in curly braces for each sub struct within the greater structure (see
+[User Defined Knobs](#user-defined-knobs) for an example).
+
+### Min/Max
+
+Minimum and maximum values for knobs can be defined in the `Knob` section, for example, imagine a TDP knob that only
+will allow values between 100 and 150:
+
+```xml
+  <Knob name="TDP" type="UINT8" default="125" min="100" max="150">
+```
+
+This min/max will be enforced at the ConfigEditor UI level as well as in the autogenerated header files (validation
+functions will be defined and available to run on overrides retrived from variable storage. For more details on
+validation functions, see the [Platform Integration Doc](../PlatformIntegration/PlatformIntegrationSteps.md)).
+
+Min and max tags can be added independent of each other (this knob is not allowed to exceed some value, etc.) or they
+can be combined into one Knob, as above.
+
+## Config Editor Operations
+
+![Config Editor Options](./Images/ConfigEditorOptions.png)
+
+### Open Config file
+
+This option loads a new XML into the ConfigEditor UI. It does not erase any previously loaded XMLs. This is useful if
+your platform has more than one configuration XML you wish to view at one time.
+
+### Open Config file and Clear Old Config
+
+This option loads a new XML into the ConfigEditor UI and clears any previously loaded XMLs.
+
+### Binary Operations
+
+Variable list binaries (in the same format the EFI shell cmd dmpstore uses) can be created or loaded by ConfigEditor.
+These are used to write FW configuration updates from a host OS to running FW via a
+[script](../../Tools/WriteConfVarListToUefiVars.py) or to apply via dmpstore in an EFI shell. These have a .vl suffix
+to indicate they are in variable list format.
+
+- Save Full Config Data to Binary:
+  Create a binary with all config knobs included in it.
+- Save Config Changes to Binary:
+  Create a binary with only changed config knobs (as compared to the base XML(s)) included in it.
+- Load Config Data from Binary:
+  Load a saved variable list binary into the UI. This binary can have been generated by ConfigEditor or dmpstore. In
+  the case that any settings are present that are not in the base XML, they will be ignored. In this way, dmpstore can
+  easily dump all UEFI variables and the user can load them in the tool, only seeing the config they care about.
+
+### SVD Operations
+
+The SVD is intended for use with the UEFI [Conf App](../../ConfApp/), which can take the SVD as input
+and give an SVD describing the current UEFI settings as an output. ConfApp will accept an SVD via USB or serial. After
+receiving the SVD, ConfApp will reboot the system to allow the settings to be applied. The SVD is an XML with base64
+encoded data to be able to pass via serial.
+
+- Save Full Config Data to SVD File:
+    Save all config knobs into SVD format.
+- Save Config Changes to SVD File:
+    Save only the config knobs that have been changed from the base XML(s) into SVD format. This option creates a
+    smaller SVD and only updates settings that need to be changed.
+- Load Config Data from SVD File:
+    Once the target system has dumped current configuration from ConfApp, the output data can be viewed in
+    the ConfigEditor on a host system or saved SVDs from the ConfigEditor can be loaded again.
+
+### Change File Operations
+
+Profiles are represented as change files in CSV format on top of the generic profile (for more info see the
+[Profiles](../Profiles/Overview.md) doc).
+
+Change files may be loaded into the ConfigEditor and it will update the relevant setting with the same GUID and name.
+
+If multiple XMLs are loaded, and one of the change file save operations is performed, multiple change files will be
+generated with the name of the relevant base XML as a suffix to the provided name.
+
+- Save Full Config Data to Change File
+  Save all configuration knobs to the change file, even if they do not have a change over the base XML(s). This is
+  helpful to see the whole state of configuration from one file.
+- Save Config Changes to Change File
+  Save only configuration knobs that have a different value from the base XML(s) to a change file. This is helpful to
+  have smaller change files, but looking just at a change file does not describe the whole state.
+- Load Config from Change File
+  Load a previously save change file into the UI, overwriting any values from the base XML(s). It must be loaded onto
+  an XML that has the configuration knobs present in the change file.
+
+CSV files have the following format:
+
+GUID, Name, Value, Help
+
+Where GUID is the namespace GUID, Name is the knob name, Value is the data associated with the knob, and help
+is a general description of the knob. Help is optional. The GUID is only printed once, to save space, and all other
+knobs sharing the same GUID simply print `*` in the GUID field, indicating they use whichever GUID is printed above the
+line of `*`s.
