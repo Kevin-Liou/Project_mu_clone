@@ -1,10 +1,16 @@
-cd project mu
-
+Environment:
+git submodule update --init --recursive
+python -m venv my_mu_venv
+my_mu_venv\Scripts\activate
 python -m pip install --upgrade pip
 pip install --upgrade -r pip-requirements.txt
 
+
+Initialize & Update:
 stuart_setup -c Platforms/QemuQ35Pkg/PlatformBuild.py TOOL_CHAIN_TAG=VS2019
 stuart_update -c Platforms/QemuQ35Pkg/PlatformBuild.py TOOL_CHAIN_TAG=VS2019
 
+
+Build:
 stuart_build -c Platforms/QemuQ35Pkg/PlatformBuild.py TOOL_CHAIN_TAG=VS2019
 stuart_build -c Platforms/QemuQ35Pkg/PlatformBuild.py TOOL_CHAIN_TAG=VS2019 --FlashOnly
