@@ -35,7 +35,7 @@
   DEFINE OPT_INTO_MFCI_PRE_PRODUCTION   = TRUE
   DEFINE BUILD_UNIT_TESTS               = TRUE
   DEFINE PEI_MM_IPL_ENABLED             = TRUE
-  DEFINE GUI_FRONT_PAGE                 = FALSE
+  DEFINE GUI_FRONT_PAGE                 = TRUE
 
   # Configure Shared Crypto
   !ifndef ENABLE_SHARED_CRYPTO # by default true

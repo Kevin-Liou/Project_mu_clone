@@ -41,23 +41,30 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define MS_GRAPHICS_GRAY_KEY_FILL_COLOR       {.Blue = 0x4D, .Green = 0x4D, .Red = 0x4D, .Reserved = 0xFF}
 #define MS_GRAPHICS_DARK_GRAY_KEY_FILL_COLOR  {.Blue = 0x33, .Green = 0x33, .Red = 0x33, .Reserved = 0xFF}
 
+#define Quanta_24252E {.Blue = 0x2E, .Green = 0x25, .Red = 0x24, .Reserved = 0xFF}
+#define Quanta_0C131A {.Blue = 0x1A, .Green = 0x13, .Red = 0x0C, .Reserved = 0xFF}
+#define Quanta_8E9098 {.Blue = 0x98, .Green = 0x90, .Red = 0x8E, .Reserved = 0xFF}
+#define Quanta_8E9098 {.Blue = 0x98, .Green = 0x90, .Red = 0x8E, .Reserved = 0xFF}
+#define Quanta_3C434F {.Blue = 0x4F, .Green = 0x43, .Red = 0x3C, .Reserved = 0xFF}
+
+
 MS_COLOR_TABLE  gMsColorTable = {
   //// Color definitions per view
   //  Label
-  .LabelTextNormalColor     = MS_GRAPHICS_BLACK_COLOR,
+  .LabelTextNormalColor     = Quanta_8E9098,
   .LabelTextLargeColor      = MS_GRAPHICS_CYAN_COLOR,
   .LabelTextRedColor        = MS_GRAPHICS_TEXT_RED_COLOR,
   .LabelTextGrayoutColor    = MS_GRAPHICS_LIGHT_GRAY_3_COLOR,
-  .LabelTextBackgroundColor = MS_GRAPHICS_WHITE_COLOR,
+  .LabelTextBackgroundColor = Quanta_0C131A,
 
   //  ListBox
-  .ListBoxNormalColor                  = MS_GRAPHICS_LIGHT_GRAY_1_COLOR,
+  .ListBoxNormalColor                  = Quanta_0C131A,
   .ListBoxHoverColor                   = MS_GRAPHICS_LIGHT_GRAY_2_COLOR,
-  .ListBoxSelectColor                  = MS_GRAPHICS_MED_BLUE_COLOR,
+  .ListBoxSelectColor                  = Quanta_3C434F,
   .ListBoxGrayoutColor                 = MS_GRAPHICS_LIGHT_GRAY_2_COLOR,
   .ListBoxHighlightBoundColor          = MS_GRAPHICS_BLACK_COLOR,
   .ListBoxSelectFGColor                = MS_GRAPHICS_BLACK_COLOR,
-  .ListBoxNormalFGColor                = MS_GRAPHICS_BLACK_COLOR,
+  .ListBoxNormalFGColor                = Quanta_8E9098,
   .ListBoxGrayoutFGColor               = MS_GRAPHICS_MED_GRAY_3_COLOR,
   .ListBoxCheckBoxBackgroundColor      = MS_GRAPHICS_WHITE_COLOR,
   .ListBoxCheckBoxBoundGrayoutColor    = MS_GRAPHICS_MED_GRAY_3_COLOR,
@@ -100,10 +107,10 @@ MS_COLOR_TABLE  gMsColorTable = {
   .ToggleSwitchOffColor           = MS_GRAPHICS_DARK_GRAY_2_COLOR,
   .ToggleSwitchHoverColor         = MS_GRAPHICS_LIGHT_GRAY_2_COLOR,
   .ToggleSwitchGrayoutColor       = MS_GRAPHICS_LIGHT_GRAY_3_COLOR,
-  .ToggleSwitchTextFGColor        = MS_GRAPHICS_BLACK_COLOR,
-  .ToggleSwitchTextBGColor        = MS_GRAPHICS_WHITE_COLOR,
+  .ToggleSwitchTextFGColor        = Quanta_8E9098,
+  .ToggleSwitchTextBGColor        = Quanta_0C131A,
   .ToggleSwitchHighlightBGColor   = MS_GRAPHICS_BLACK_COLOR,
-  .ToggleSwitchBackgroundColor    = MS_GRAPHICS_WHITE_COLOR,
+  .ToggleSwitchBackgroundColor    = Quanta_0C131A,
   .ToggleSwitchCircleGrayoutColor = MS_GRAPHICS_MED_GRAY_1_COLOR,
 
   //  Message Box
@@ -177,11 +184,11 @@ MS_COLOR_TABLE  gMsColorTable = {
 
   //  Single Select
   .SingleSelectDialogTextColor             = MS_GRAPHICS_WHITE_COLOR,
-  .SingleSelectDialogTitleBarTextColor     = MS_GRAPHICS_BLACK_COLOR,
+  .SingleSelectDialogTitleBarTextColor     = Quanta_3C434F,
   .SingleSelectDialogDialogBackGroundColor = MS_GRAPHICS_CYAN_COLOR,
   .SingleSelectDialogDialogFrameColor      = MS_GRAPHICS_LIGHT_GRAY_3_COLOR,
   .SingleSelectDialogButtonHoverColor      = MS_GRAPHICS_LIGHT_BLUE_COLOR,
-  .SingleSelectDialogButtonSelectColor     = MS_GRAPHICS_MED_BLUE_COLOR,
+  .SingleSelectDialogButtonSelectColor     = Quanta_3C434F,
   .SingleSelectDialogButtonGrayoutColor    = MS_GRAPHICS_MED_GRAY_1_COLOR,
   .SingleSelectDialogButtonRingColor       = MS_GRAPHICS_WHITE_COLOR,
   .SingleSelectDialogButtonTextColor       = MS_GRAPHICS_WHITE_COLOR,
@@ -218,12 +225,12 @@ MS_COLOR_TABLE  gMsColorTable = {
   .KeyboardSelectedStateBGColor      = MS_GRAPHICS_WHITE_COLOR,
 
   //  Display Engine
-  .TitleBarBackgroundColor     = MS_GRAPHICS_LIGHT_GRAY_2_COLOR,
-  .TitleBarTextColor           = MS_GRAPHICS_BLACK_COLOR,
-  .MasterFrameBackgroundColor  = MS_GRAPHICS_LIGHT_GRAY_1_COLOR,
-  .MasterFrameCellNormalColor  = MS_GRAPHICS_LIGHT_GRAY_1_COLOR,
+  .TitleBarBackgroundColor     = MS_GRAPHICS_BLACK_COLOR,
+  .TitleBarTextColor           = MS_GRAPHICS_WHITE_COLOR,
+  .MasterFrameBackgroundColor  = Quanta_24252E,
+  .MasterFrameCellNormalColor  = Quanta_24252E,
   .MasterFrameCellHoverColor   = MS_GRAPHICS_LIGHT_GRAY_2_COLOR,
-  .MasterFrameCellSelectColor  = MS_GRAPHICS_MED_BLUE_COLOR,
+  .MasterFrameCellSelectColor  = Quanta_3C434F,
   .MasterFrameCellGrayoutColor = MS_GRAPHICS_LIGHT_GRAY_2_COLOR,
-  .FormCanvasBackgroundColor   = MS_GRAPHICS_WHITE_COLOR
+  .FormCanvasBackgroundColor   = Quanta_0C131A
 };
