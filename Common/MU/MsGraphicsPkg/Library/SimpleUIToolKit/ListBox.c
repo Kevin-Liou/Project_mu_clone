@@ -8,11 +8,24 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "SimpleUIToolKitInternal.h"
+#include <Pi/PiFirmwareFile.h>
+#include <Library/DxeServicesLib.h>
+#include <Library/BmpSupportLib.h>
 
 #define UIT_LB_HIGHLIGHT_RING_WIDTH         MsUiScaleByTheme(4)   // Number of pixels making up the listbox cell's highlight ring.
 #define UIT_LB_OUTER_BORDER_WIDTH           MsUiScaleByTheme(5)   // Number of pixels making up the listbox cell's outer border (highlight right offset).
 #define UIT_LB_CHECKBOX_OUTER_BORDER_WIDTH  MsUiScaleByTheme(2)   // Number of pixels making up the listbox cell's checkbox outer border (ring).
 #define UIT_LB_CHECKBOX_INNER_GAP_WIDTH     MsUiScaleByTheme(4)   // Number of pixels making up the listbox cell's checkbox inner gap (between check and outer border).
+
+EFI_STATUS
+GetAndDisplayBitmap_ListBox (
+  EFI_GUID  *FileGuid,
+  UINTN     XCoord,
+  UINTN     YCoord,
+  BOOLEAN   XCoordAdj
+  );
+
+EFI_GRAPHICS_OUTPUT_PROTOCOL  *mGop;
 
 //////////////////////////////////////////////////////////////////////////////
 // Private
@@ -354,6 +367,8 @@ RenderCell (
              CellWidth * sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL)
              );
 
+  GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdFrontPageLogoFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+
   // Render cell highlight ring (will be the same color as the cell background if highlight is off).  Note that it's faster
   // (and visually looks better) to draw four individual line segments than to do a single large rect fill.
   //
@@ -426,7 +441,7 @@ RenderCell (
              pCell->pCellText,
              StringInfo,
              &pBltBuffer,
-             pCell->CellTextBounds.Left,
+             (pCell->CellTextBounds.Left) + 35,
              pCell->CellTextBounds.Top,
              NULL,
              NULL,
@@ -1129,4 +1144,91 @@ delete_ListBox (
   if (NULL != this) {
     this->Base.Dtor ((VOID *)this);
   }
+}
+
+EFI_STATUS
+GetAndDisplayBitmap_ListBox (
+  EFI_GUID  *FileGuid,
+  UINTN     XCoord,
+  UINTN     YCoord,
+  BOOLEAN   XCoordAdj
+  )
+{
+  EFI_STATUS                     Status;
+  UINT8                          *BMPData    = NULL;
+  UINTN                          BMPDataSize = 0;
+  EFI_GRAPHICS_OUTPUT_BLT_PIXEL  *BltBuffer  = NULL;
+  UINTN                          BltBufferSize;
+  UINTN                          BitmapHeight;
+  UINTN                          BitmapWidth;
+  DEBUG ((DEBUG_ERROR, "Quanta %a Start...\n", __FUNCTION__));
+  // Get the specified image from FV.
+  //
+  Status = GetSectionFromAnyFv (
+             FileGuid,
+             EFI_SECTION_RAW,
+             0,
+             (VOID **)&BMPData,
+             &BMPDataSize
+             );
+
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "ERROR [DE]: Failed to find bitmap file (GUID=%g) (%r).\r\n", FileGuid, Status));
+    return Status;
+  }
+
+  // Convert the bitmap from BMP format to a GOP framebuffer-compatible form.
+  //
+  Status = TranslateBmpToGopBlt (
+             BMPData,
+             BMPDataSize,
+             &BltBuffer,
+             &BltBufferSize,
+             &BitmapHeight,
+             &BitmapWidth
+             );
+  if (EFI_ERROR (Status)) {
+    FreePool (BMPData);
+    DEBUG ((DEBUG_ERROR, "ERROR [DE]: Failed to convert bitmap file to GOP format (%r).\r\n", Status));
+    return Status;
+  }
+
+  if (XCoordAdj == TRUE) {
+    XCoord -= BitmapWidth;
+  }
+
+  UINTN ScaledWidth = 32;
+  UINTN ScaledHeight = 32;
+  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *ScaledBltBuffer = NULL;
+  ScaledBltBuffer = AllocateZeroPool(ScaledWidth * ScaledHeight * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL));
+  if (ScaledBltBuffer == NULL) {
+    FreePool(BMPData);
+    FreePool(BltBuffer);
+    DEBUG((DEBUG_ERROR, "ERROR [DE]: Failed to allocate memory for ScaledBltBuffer.\r\n"));
+    return EFI_OUT_OF_RESOURCES;
+  }
+  UINTN i, j;
+  for (i = 0; i < ScaledHeight; i++) {
+    for (j = 0; j < ScaledWidth; j++) {
+      ScaledBltBuffer[i * ScaledWidth + j] = BltBuffer[((i * BitmapHeight) / ScaledHeight) * BitmapWidth + ((j * BitmapWidth) / ScaledWidth)];
+    }
+  }
+
+  mGop->Blt (
+          mGop,
+          ScaledBltBuffer,
+          EfiBltBufferToVideo,
+          0,
+          0,
+          ((XCoord) + (ScaledWidth / 4)),       // Upper Right corner
+          ((YCoord) + (ScaledHeight / 5)),
+          ScaledWidth,  // need 32
+          ScaledHeight, // need 32
+          0
+          );
+
+  FreePool (BMPData);
+  FreePool (BltBuffer);
+  FreePool (ScaledBltBuffer);
+  return Status;
 }
