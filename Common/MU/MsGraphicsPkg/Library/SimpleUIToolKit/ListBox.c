@@ -314,6 +314,7 @@ RenderCell (
   EFI_IMAGE_OUTPUT               *pBltBuffer = NULL;
   EFI_GRAPHICS_OUTPUT_BLT_PIXEL  *pFillColor;
   EFI_GRAPHICS_OUTPUT_BLT_PIXEL  *pCellRingColor;
+  UINT8                          Width_Offset = 0;
 
   if (CellIndex >= this->m_NumberOfCells) {
     Status = EFI_INVALID_PARAMETER;
@@ -368,6 +369,9 @@ RenderCell (
              );
 
   if ((this->m_Flags & UIT_LISTBOX_FLAGS_TOP_MENU) == UIT_LISTBOX_FLAGS_TOP_MENU) {
+
+    Width_Offset = 40;
+
     switch (CellIndex) {
       case 0: // PC info
         GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdImageMainFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
@@ -470,7 +474,7 @@ RenderCell (
              pCell->pCellText,
              StringInfo,
              &pBltBuffer,
-             (pCell->CellTextBounds.Left) + 35,
+             (pCell->CellTextBounds.Left) + Width_Offset,
              pCell->CellTextBounds.Top,
              NULL,
              NULL,
