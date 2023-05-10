@@ -114,6 +114,10 @@
   gMsGraphicsPkgTokenSpaceGuid.PcdCurrentPointerState
   gDfciPkgTokenSpaceGuid.PcdSetupUiReducedFunction
   gDfciPkgTokenSpaceGuid.PcdDfciEnabled
+  gOemPkgTokenSpaceGuid.PcdImageBootFile
+  gOemPkgTokenSpaceGuid.PcdImageExitFile
+  gOemPkgTokenSpaceGuid.PcdImageMainFile
+  gOemPkgTokenSpaceGuid.PcdImageSecurityFile
 
 [Depex]
   TRUE

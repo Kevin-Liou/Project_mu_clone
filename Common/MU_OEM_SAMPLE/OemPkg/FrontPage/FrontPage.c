@@ -184,13 +184,6 @@ GetAndDisplayBitmap (
   BOOLEAN   XCoordAdj
   );
 
-EFI_STATUS
-GetAndDisplayBitmap_Frame (
-  EFI_GUID  *FileGuid,
-  UINTN     XCoord,
-  UINTN     YCoord,
-  BOOLEAN   XCoordAdj
-  );
 /**
 
   Acquire the string associated with the Index from smbios structure and return it.
@@ -884,6 +877,7 @@ CreateTopMenu (
 {
   DEBUG ((DEBUG_ERROR, "Quanta %a Start...\n", __FUNCTION__));
   EFI_FONT_INFO  FontInfo;
+  UINT32         Flags = 0;
 
   // Check whether there is a system password set.  If so, prompt the user for it before deciding the top-level menu list.
   // If the user doesn't know the password, they can dismiss the dialog and will see a limited-functionality menu.
@@ -945,13 +939,14 @@ CreateTopMenu (
   //
   FontInfo.FontSize  = FP_MFRAME_MENU_TEXT_FONT_HEIGHT;
   FontInfo.FontStyle = EFI_HII_FONT_STYLE_NORMAL;
+  Flags |= UIT_LISTBOX_FLAGS_TOP_MENU;
 
   ListBox  *TopMenu = new_ListBox (
                         OrigX,
                         OrigY,
                         CellWidth,
                         CellHeight,
-                        0,
+                        Flags,
                         &FontInfo,
                         CellTextXOffset,
                         &gMsColorTable.MasterFrameCellNormalColor,
@@ -1762,75 +1757,6 @@ GetAndDisplayBitmap (
           0,
           XCoord,       // Upper Right corner
           ((mTitleBarHeight / 2) - (BitmapHeight / 2)),
-          BitmapWidth,
-          BitmapHeight,
-          0
-          );
-
-  FreePool (BMPData);
-  FreePool (BltBuffer);
-  return Status;
-}
-
-EFI_STATUS
-GetAndDisplayBitmap_Frame (
-  EFI_GUID  *FileGuid,
-  UINTN     XCoord,
-  UINTN     YCoord,
-  BOOLEAN   XCoordAdj
-  )
-{
-  EFI_STATUS                     Status;
-  UINT8                          *BMPData    = NULL;
-  UINTN                          BMPDataSize = 0;
-  EFI_GRAPHICS_OUTPUT_BLT_PIXEL  *BltBuffer  = NULL;
-  UINTN                          BltBufferSize;
-  UINTN                          BitmapHeight;
-  UINTN                          BitmapWidth;
-  DEBUG ((DEBUG_ERROR, "Quanta %a Start...\n", __FUNCTION__));
-  // Get the specified image from FV.
-  //
-  Status = GetSectionFromAnyFv (
-             FileGuid,
-             EFI_SECTION_RAW,
-             0,
-             (VOID **)&BMPData,
-             &BMPDataSize
-             );
-
-  if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "ERROR [DE]: Failed to find bitmap file (GUID=%g) (%r).\r\n", FileGuid, Status));
-    return Status;
-  }
-
-  // Convert the bitmap from BMP format to a GOP framebuffer-compatible form.
-  //
-  Status = TranslateBmpToGopBlt (
-             BMPData,
-             BMPDataSize,
-             &BltBuffer,
-             &BltBufferSize,
-             &BitmapHeight,
-             &BitmapWidth
-             );
-  if (EFI_ERROR (Status)) {
-    FreePool (BMPData);
-    DEBUG ((DEBUG_ERROR, "ERROR [DE]: Failed to convert bitmap file to GOP format (%r).\r\n", Status));
-    return Status;
-  }
-
-  if (XCoordAdj == TRUE) {
-    XCoord -= BitmapWidth;
-  }
-
-  mGop->Blt (
-          mGop,
-          BltBuffer,
-          EfiBltBufferToVideo,
-          0,
-          0,
-          XCoord,       // Upper Right corner
-          ((YCoord / 2) - (BitmapHeight / 2)),
           BitmapWidth,
           BitmapHeight,
           0

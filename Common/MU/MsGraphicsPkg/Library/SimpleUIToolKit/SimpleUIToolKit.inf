@@ -58,5 +58,9 @@
 [Pcd]
   gMsGraphicsPkgTokenSpaceGuid.PcdMsGopOverrideProtocolGuid
   gOemPkgTokenSpaceGuid.PcdFrontPageLogoFile
+  gOemPkgTokenSpaceGuid.PcdImageBootFile
+  gOemPkgTokenSpaceGuid.PcdImageExitFile
+  gOemPkgTokenSpaceGuid.PcdImageMainFile
+  gOemPkgTokenSpaceGuid.PcdImageSecurityFile
 
 [BuildOptions]

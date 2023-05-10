@@ -593,6 +593,18 @@ FILE FREEFORM = PCD(gZeroTouchPkgTokenSpaceGuid.PcdZeroTouchCertificateFile) {
   FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdBootFailIndicatorFile ) {
     SECTION RAW = OemPkg/FrontPage/Resources/NoBoot.bmp
   }
+  FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdImageBootFile) {
+    SECTION RAW = OemPkg/FrontPage/Resources/ImageBoot_M.bmp
+  }
+  FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdImageExitFile) {
+    SECTION RAW = OemPkg/FrontPage/Resources/ImageExit_M.bmp
+  }
+  FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdImageMainFile) {
+    SECTION RAW = OemPkg/FrontPage/Resources/ImageMain_M.bmp
+  }
+  FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdImageSecurityFile ) {
+    SECTION RAW = OemPkg/FrontPage/Resources/ImageSecurity_M.bmp
+  }
   FILE FREEFORM = gMmSupervisorPolicyFileGuid {
     SECTION RAW = $(POLICY_BIN_PATH)
   }

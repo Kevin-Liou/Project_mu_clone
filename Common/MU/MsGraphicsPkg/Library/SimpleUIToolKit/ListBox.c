@@ -367,7 +367,36 @@ RenderCell (
              CellWidth * sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL)
              );
 
-  GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdFrontPageLogoFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+  if ((this->m_Flags & UIT_LISTBOX_FLAGS_TOP_MENU) == UIT_LISTBOX_FLAGS_TOP_MENU) {
+    switch (CellIndex) {
+      case 0: // PC info
+        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdImageMainFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+        break;
+
+      case 1: // Security
+        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdImageSecurityFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+        break;
+
+      case 2: // Boot Order
+        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdImageBootFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+        break;
+
+      case 3: // DFCI
+        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdFrontPageLogoFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+        break;
+
+      case 4: // HWH
+        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdFrontPageLogoFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+        break;
+
+      case 5: // Exit
+        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdImageExitFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+        break;
+
+      default:
+        break;
+    }
+  }
 
   // Render cell highlight ring (will be the same color as the cell background if highlight is off).  Note that it's faster
   // (and visually looks better) to draw four individual line segments than to do a single large rect fill.
