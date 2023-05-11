@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "SimpleUIToolKitInternal.h"
+#include <Library/UefiBootServicesTableLib.h>
 #include <Pi/PiFirmwareFile.h>
 #include <Library/DxeServicesLib.h>
 #include <Library/BmpSupportLib.h>
@@ -18,7 +19,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define UIT_LB_CHECKBOX_INNER_GAP_WIDTH     MsUiScaleByTheme(4)   // Number of pixels making up the listbox cell's checkbox inner gap (between check and outer border).
 
 EFI_STATUS
-GetAndDisplayBitmap_ListBox (
+GetAndDisplayBitmap_MasterFrame_icon (
   EFI_GUID  *FileGuid,
   UINTN     XCoord,
   UINTN     YCoord,
@@ -368,37 +369,34 @@ RenderCell (
              CellWidth * sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL)
              );
 
+  DEBUG ((
+    DEBUG_ERROR,
+    "Quanta RenderCell value: %d, %d, %d, %d, %d, %d, %s\r\n", \
+    pCell->CellBounds.Left,
+    pCell->CellBounds.Top,
+    pCell->CellBounds.Right,
+    pCell->CellBounds.Bottom,
+    CellWidth,
+    CellHeight,
+    pCell->pCellText
+    ));
+
   if ((this->m_Flags & UIT_LISTBOX_FLAGS_TOP_MENU) == UIT_LISTBOX_FLAGS_TOP_MENU) {
 
     Width_Offset = 40;
 
-    switch (CellIndex) {
-      case 0: // PC info
-        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdImageMainFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
-        break;
-
-      case 1: // Security
-        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdImageSecurityFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
-        break;
-
-      case 2: // Boot Order
-        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdImageBootFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
-        break;
-
-      case 3: // DFCI
-        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdFrontPageLogoFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
-        break;
-
-      case 4: // HWH
-        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdFrontPageLogoFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
-        break;
-
-      case 5: // Exit
-        GetAndDisplayBitmap_ListBox (PcdGetPtr (PcdImageExitFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
-        break;
-
-      default:
-        break;
+    if (StrCmp(pCell->pCellText, L"PC information") == 0) {
+      GetAndDisplayBitmap_MasterFrame_icon (PcdGetPtr (PcdImageMainFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+    } else if (StrCmp(pCell->pCellText, L"Security") == 0) {
+      GetAndDisplayBitmap_MasterFrame_icon (PcdGetPtr (PcdImageSecurityFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+    } else if (StrCmp(pCell->pCellText, L"Boot configuration") == 0) {
+      GetAndDisplayBitmap_MasterFrame_icon (PcdGetPtr (PcdImageBootFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+    } else if (StrCmp(pCell->pCellText, L"Management") == 0) {
+      GetAndDisplayBitmap_MasterFrame_icon (PcdGetPtr (PcdFrontPageLogoFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+    } else if (StrCmp(pCell->pCellText, L"Hardware Health") == 0) {
+      GetAndDisplayBitmap_MasterFrame_icon (PcdGetPtr (PcdFrontPageLogoFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
+    } else if (StrCmp(pCell->pCellText, L"Exit") == 0) {
+      GetAndDisplayBitmap_MasterFrame_icon (PcdGetPtr (PcdImageExitFile), pCell->CellBounds.Left, pCell->CellBounds.Top, FALSE);
     }
   }
 
@@ -1180,7 +1178,7 @@ delete_ListBox (
 }
 
 EFI_STATUS
-GetAndDisplayBitmap_ListBox (
+GetAndDisplayBitmap_MasterFrame_icon (
   EFI_GUID  *FileGuid,
   UINTN     XCoord,
   UINTN     YCoord,
@@ -1195,6 +1193,7 @@ GetAndDisplayBitmap_ListBox (
   UINTN                          BitmapHeight;
   UINTN                          BitmapWidth;
   DEBUG ((DEBUG_ERROR, "Quanta %a Start...\n", __FUNCTION__));
+  DEBUG ((DEBUG_ERROR, "Quanta bitmap file (GUID=%g).\n", FileGuid));
   // Get the specified image from FV.
   //
   Status = GetSectionFromAnyFv (
@@ -1253,7 +1252,7 @@ GetAndDisplayBitmap_ListBox (
           EfiBltBufferToVideo,
           0,
           0,
-          ((XCoord) + (ScaledWidth / 4)),       // Upper Right corner
+          ((XCoord) + (ScaledWidth / 4)),
           ((YCoord) + (ScaledHeight / 5)),
           ScaledWidth,  // need 32
           ScaledHeight, // need 32
