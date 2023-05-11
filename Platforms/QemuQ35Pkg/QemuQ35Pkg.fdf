@@ -581,6 +581,24 @@ FILE FREEFORM = PCD(gZeroTouchPkgTokenSpaceGuid.PcdZeroTouchCertificateFile) {
   FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdLowBatteryFile) {
     SECTION RAW = OemPkg/FrontPage/Resources/LBAT.bmp
   }
+  FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdLowBatteryFile2) {
+    SECTION RAW = OemPkg/FrontPage/Resources/LBAT_2.bmp
+  }
+  FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdLowBatteryFile3) {
+    SECTION RAW = OemPkg/FrontPage/Resources/LBAT_3.bmp
+  }
+  FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdLowBatteryFile4) {
+    SECTION RAW = OemPkg/FrontPage/Resources/LBAT_4.bmp
+  }
+  FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdLowBatteryFile5) {
+    SECTION RAW = OemPkg/FrontPage/Resources/LBAT_5.bmp
+  }
+  FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdLowBatteryFile6) {
+    SECTION RAW = OemPkg/FrontPage/Resources/LBAT_6.bmp
+  }
+  FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdLowBatteryFile7) {
+    SECTION RAW = OemPkg/FrontPage/Resources/LBAT_7.bmp
+  }
   FILE FREEFORM = PCD(gOemPkgTokenSpaceGuid.PcdThermalFile) {
     SECTION RAW = OemPkg/FrontPage/Resources/THOT.bmp
   }

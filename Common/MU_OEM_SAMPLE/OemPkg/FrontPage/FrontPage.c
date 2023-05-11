@@ -59,6 +59,7 @@
 
 #include <MsDisplayEngine.h>
 #include <UIToolKit/SimpleUIToolKit.h>
+#include <time.h>
 
 #define FP_OSK_WIDTH_PERCENT  75            // On-screen keyboard is 75% the width of the screen.
 
@@ -91,6 +92,7 @@ DFCI_SETTING_ACCESS_PROTOCOL     *mSettingAccess;
 DFCI_AUTH_TOKEN                  mAuthToken;
 SECURE_BOOT_PAYLOAD_INFO         *mSecureBootKeys     = NULL;
 UINT8                            mSecureBootKeysCount = 0;
+UINT8                            BatteryPercentage = 0;
 
 extern EFI_HII_HANDLE  gStringPackHandle;
 extern EFI_GUID        gMsEventMasterFrameNotifyGroupGuid;
@@ -876,6 +878,15 @@ CreateTopMenu (
   )
 {
   DEBUG ((DEBUG_ERROR, "Quanta %a Start...\n", __FUNCTION__));
+  DEBUG ((
+    DEBUG_ERROR,
+    "Quanta CreateTopMenu value: %d, %d, %d, %d, %d\r\n", \
+    OrigX,
+    OrigY,
+    CellWidth,
+    CellHeight,
+    CellTextXOffset
+    ));
   EFI_FONT_INFO  FontInfo;
   UINT32         Flags = 0;
 
@@ -1004,7 +1015,8 @@ RenderTitlebar (
           mTitleBarWidth * sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL)
           );
 
-  GetAndDisplayBitmap (PcdGetPtr (PcdFrontPageLogoFile), (mMasterFrameWidth  * FP_TBAR_MSLOGO_X_PERCENT) / 100, FALSE);   // 2nd param is x coordinate
+  DEBUG ((DEBUG_ERROR, "Quanta GetAndDisplayBitmap PcdFrontPageLogoFile Start...\n"));
+  GetAndDisplayBitmap (PcdGetPtr (PcdFrontPageLogoFile), (mMasterFrameWidth  * FP_TBAR_MSLOGO_X_PERCENT) / 100, FALSE);   // 2nd param is x coordinatess
 
   Status = gBS->HandleProtocol (mImageHandle, &gEfiLoadedImageProtocolGuid, (VOID **)&ImageInfo);
   ASSERT_EFI_ERROR (Status);
@@ -1120,6 +1132,51 @@ Exit:
   }
 
   return Status;
+}
+
+VOID
+DrawBatteryImageWithTitleBar (
+  IN UINT8    BatteryCapacity
+  )
+{
+  EFI_GUID    *BatteryImageGuid = NULL;
+  // An array of GUIDs for the battery images.
+  EFI_GUID*   BatteryImages[] = {
+    (EFI_GUID *)PcdGetPtr(PcdLowBatteryFile),
+    (EFI_GUID *)PcdGetPtr(PcdLowBatteryFile2),
+    (EFI_GUID *)PcdGetPtr(PcdLowBatteryFile3),
+    (EFI_GUID *)PcdGetPtr(PcdLowBatteryFile4),
+    (EFI_GUID *)PcdGetPtr(PcdLowBatteryFile5),
+    (EFI_GUID *)PcdGetPtr(PcdLowBatteryFile6),
+    (EFI_GUID *)PcdGetPtr(PcdLowBatteryFile7)
+  };
+
+  // Use the battery capacity to index into the array
+  UINT8 index = BatteryCapacity;   // Adjust the denominator based on how you want to partition the battery capacity
+
+  DEBUG ((DEBUG_ERROR, "Quanta DrawBatteryImageWithTitleBar file (GUID=%g).\n", BatteryImages[index]));
+  // Get the GUID for the image that corresponds to the current battery capacity.
+  BatteryImageGuid = BatteryImages[index];
+
+  // If we successfully got a GUID, display the image.
+  if (BatteryImageGuid != NULL) {
+    DEBUG ((DEBUG_ERROR, "Quanta GetAndDisplayBitmap PcdLowBatteryFile Start...\n"));
+    GetAndDisplayBitmap (BatteryImageGuid,    ((mTitleBarWidth - 50)  * FP_TBAR_BATTERY_X_PERCENT) / 100, FALSE); // battery icon at 50% of *Master Frame* width.
+  }
+}
+
+VOID
+EFIAPI
+UpdateBatteryImageCallback (
+  IN EFI_EVENT  Event,
+  IN VOID       *Context
+  )
+{
+  BatteryPercentage += 1;
+  if (BatteryPercentage > 6) {
+    BatteryPercentage = 0;
+  }
+  DrawBatteryImageWithTitleBar(BatteryPercentage);
 }
 
 /**
@@ -1358,18 +1415,18 @@ InitializeFrontPageUI (
   DEBUG ((
     DEBUG_INFO,
     "INFO [FP]: FP Dimensions: %d, %d, %d, %d, %d, %d\r\n", \
-    mBootHorizontalResolution,
-    mBootVerticalResolution,
-    mTitleBarWidth,
-    mTitleBarHeight,
-    mMasterFrameWidth,
-    mMasterFrameHeight
+    mBootHorizontalResolution, //1024
+    mBootVerticalResolution,  //768
+    mTitleBarWidth, //1024
+    mTitleBarHeight,  //61
+    mMasterFrameWidth,  //256
+    mMasterFrameHeight  //707
     ));
 
   // Compute Master Frame origin and menu text indentation.
   //
   UINT32  MasterFrameMenuOrigX = 0;
-  UINT32  MasterFrameMenuOrigY = mTitleBarHeight;
+  UINT32  MasterFrameMenuOrigY = mTitleBarHeight; // 61
   UINT32  CellTextXOffset      = ((mMasterFrameWidth * FP_MFRAME_MENU_TEXT_OFFSET_PERCENT) / 100);
 
   // Determine whether there are any events that require user notification.
@@ -1381,11 +1438,11 @@ InitializeFrontPageUI (
   // Create the top-level menu in the Master Frame.
   //
   mTopMenu = CreateTopMenu (
-               MasterFrameMenuOrigX,
-               MasterFrameMenuOrigY,
+               MasterFrameMenuOrigX, // 0
+               MasterFrameMenuOrigY, // 61
                (mMasterFrameWidth - FP_MFRAME_DIVIDER_LINE_WIDTH_PIXELS),
                ((mMasterFrameHeight * FP_MFRAME_MENU_CELL_HEIGHT_PERCENT) / 100),
-               CellTextXOffset
+               CellTextXOffset // 10
                );
 
   ASSERT (NULL != mTopMenu);
@@ -1397,6 +1454,10 @@ InitializeFrontPageUI (
   // Render the TitleBar at the top of the screen.
   //
   RenderTitlebar ();
+
+  // Render the Battery Image at the TitleBar.
+  //
+  DrawBatteryImageWithTitleBar (BatteryPercentage);
 
   // Render the Master Frame and its Top-Level menu contents.
   //
@@ -1508,6 +1569,7 @@ UefiMain (
 {
   EFI_STATUS  Status  = EFI_SUCCESS;
   UINT32      OSKMode = 0;
+  EFI_EVENT   TimerEvent;
 
   // Delete BootNext if entry to BootManager.
   Status = gRT->SetVariable (
@@ -1664,6 +1726,19 @@ UefiMain (
   //
   Status = InitializeFrontPageUI ();
 
+  // Create a timer event and register the callback function.
+  Status = gBS->CreateEvent (
+                  EVT_TIMER | EVT_NOTIFY_SIGNAL,
+                  TPL_CALLBACK,
+                  UpdateBatteryImageCallback,
+                  NULL,
+                  &TimerEvent
+                  );
+  if (!EFI_ERROR (Status)) {
+    // Set the timer to trigger the callback every 1 second.
+    Status = gBS->SetTimer (TimerEvent, TimerPeriodic, 10000000);
+  }
+
   if (EFI_SUCCESS != Status) {
     DEBUG ((DEBUG_ERROR, "ERROR [FP]: Failed to initialize the FrontPage user interface.  Status = %r\r\n", Status));
     goto Exit;
@@ -1694,6 +1769,9 @@ UefiMain (
   //
   UninitializeFrontPage ();
 
+  // Close the timer
+  gBS->CloseEvent (TimerEvent);
+
 Exit:
 
   return Status;
@@ -1714,6 +1792,7 @@ GetAndDisplayBitmap (
   UINTN                          BitmapHeight;
   UINTN                          BitmapWidth;
   DEBUG ((DEBUG_ERROR, "Quanta %a Start...\n", __FUNCTION__));
+  DEBUG ((DEBUG_ERROR, "Quanta bitmap file (GUID=%g).\n", FileGuid));
   // Get the specified image from FV.
   //
   Status = GetSectionFromAnyFv (
@@ -1748,6 +1827,14 @@ GetAndDisplayBitmap (
   if (XCoordAdj == TRUE) {
     XCoord -= BitmapWidth;
   }
+
+  DEBUG ((
+  DEBUG_ERROR,
+  "Quanta CreateTopMenu value: %d, %d, %d\r\n", \
+  XCoord,
+  BitmapWidth,
+  BitmapHeight
+  ));
 
   mGop->Blt (
           mGop,

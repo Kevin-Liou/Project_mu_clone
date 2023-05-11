@@ -118,6 +118,13 @@
   gOemPkgTokenSpaceGuid.PcdImageExitFile
   gOemPkgTokenSpaceGuid.PcdImageMainFile
   gOemPkgTokenSpaceGuid.PcdImageSecurityFile
+  gOemPkgTokenSpaceGuid.PcdLowBatteryFile
+  gOemPkgTokenSpaceGuid.PcdLowBatteryFile2
+  gOemPkgTokenSpaceGuid.PcdLowBatteryFile3
+  gOemPkgTokenSpaceGuid.PcdLowBatteryFile4
+  gOemPkgTokenSpaceGuid.PcdLowBatteryFile5
+  gOemPkgTokenSpaceGuid.PcdLowBatteryFile6
+  gOemPkgTokenSpaceGuid.PcdLowBatteryFile7
 
 [Depex]
   TRUE

@@ -33,6 +33,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 // FrontPage TitleBar (NOTE: Y origins are based on vertically centering the element in the TitleBar).
 #define FP_TBAR_HEIGHT_PERCENT             8                            // TitleBar height is 8% the height of the screen.
 #define FP_TBAR_MSLOGO_X_PERCENT           4                            // TitleBar: Microsoft Logo x origin starts at 4% of *Master Frame* width.
+#define FP_TBAR_BATTERY_X_PERCENT          50                           // TitleBar: Battery Logo x origin starts at 50% of *Master Frame* width.
 #define FP_TBAR_TEXT_X_PERCENT             25                           // TitleBar: Title text x origin starts at 25% of the *Master Frame* width.
 #define FP_TBAR_TEXT_FONT_HEIGHT           MsUiGetLargeFontHeight ()    // TitleBar: Title text font height.
 #define FP_TBAR_ENTRY_INDICATOR_X_PERCENT  96                           // TitleBar: Entry icon location upper right corner
