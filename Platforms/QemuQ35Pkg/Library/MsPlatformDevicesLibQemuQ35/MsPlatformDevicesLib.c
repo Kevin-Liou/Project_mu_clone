@@ -1232,6 +1232,7 @@ GetPlatformConsoleList (
   VOID
   )
 {
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   return (BDS_CONSOLE_CONNECT_ENTRY *)&gPlatformConsoles;
 }
 
@@ -1307,14 +1308,16 @@ GetPlatformPreferredConsole (
   //
   // Signal the ACPI platform driver that it can download QEMU ACPI tables.
   //
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   EfiEventGroupSignal (&gRootBridgesConnectedEventGroupGuid);
 
   // OVMF has a ton of stuff to do to make is consoles work.  Start here
 
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   VisitAllPciInstances (DetectAndPreparePlatformPciDevicePath);
 
   TempDevicePath = (EFI_DEVICE_PATH_PROTOCOL *)&gPreferredVideo;
-
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   Status = gBS->LocateDevicePath (&gEfiPciIoProtocolGuid, &TempDevicePath, &Handle);
   if (!EFI_ERROR (Status) && IsDevicePathEnd (TempDevicePath) && IsVgaHandle (Handle)) {
   } else {
@@ -1326,12 +1329,14 @@ GetPlatformPreferredConsole (
     //
     // Connect the GOP driver
     //
+    DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
     gBS->ConnectController (Handle, NULL, NULL, TRUE);
 
     //
     // Get the GOP device path
     // NOTE: We may get a device path that contains Controller node in it.
     //
+    DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
     TempDevicePath = EfiBootManagerGetGopDevicePath (Handle);
     *DevicePath    = TempDevicePath;
   }

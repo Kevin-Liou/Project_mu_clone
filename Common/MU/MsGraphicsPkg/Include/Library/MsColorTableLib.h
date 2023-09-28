@@ -196,6 +196,13 @@ typedef struct MS_COLOR_TABLE_T_DEF {
   EFI_GRAPHICS_OUTPUT_BLT_PIXEL    MasterFrameCellSelectColor;
   EFI_GRAPHICS_OUTPUT_BLT_PIXEL    MasterFrameCellGrayoutColor;
   EFI_GRAPHICS_OUTPUT_BLT_PIXEL    FormCanvasBackgroundColor;
+
+  // default color
+  EFI_GRAPHICS_OUTPUT_BLT_PIXEL    RedColor;
+  EFI_GRAPHICS_OUTPUT_BLT_PIXEL    WhiteColor;
+  EFI_GRAPHICS_OUTPUT_BLT_PIXEL    GreenColor;
+  EFI_GRAPHICS_OUTPUT_BLT_PIXEL    YellowColor;
+  EFI_GRAPHICS_OUTPUT_BLT_PIXEL    BlackColor;
 } MS_COLOR_TABLE;
 
 ///

@@ -29,6 +29,7 @@ BmConnectAllDriversToAllControllers (
     //
     // Connect All EFI 1.10 drivers following EFI 1.10 algorithm
     //
+    DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
     gBS->LocateHandleBuffer (
            AllHandles,
            NULL,
@@ -37,11 +38,13 @@ BmConnectAllDriversToAllControllers (
            &HandleBuffer
            );
 
+    DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
     for (Index = 0; Index < HandleCount; Index++) {
       gBS->ConnectController (HandleBuffer[Index], NULL, NULL, TRUE);
     }
 
     if (HandleBuffer != NULL) {
+      DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
       FreePool (HandleBuffer);
     }
 
@@ -51,7 +54,9 @@ BmConnectAllDriversToAllControllers (
     // If any new driver is dispatched (Status == EFI_SUCCESS) and we will try
     // the connect again.
     //
+    DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
     Status = gDS->Dispatch ();
+    DEBUG ((DEBUG_ERROR, "%a gDS->Dispatch status:%r\n", __FUNCTION__, Status));
   } while (!EFI_ERROR (Status));
 }
 
@@ -68,21 +73,31 @@ EfiBootManagerConnectAll (
   VOID
   )
 {
+  EFI_STATUS  Status;
   //
   // Connect the platform console first
   //
-  EfiBootManagerConnectAllDefaultConsoles ();
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
+  Status = EfiBootManagerConnectAllDefaultConsoles ();
+
+  DEBUG ((DEBUG_ERROR, "%a EfiBootManagerConnectAllDefaultConsoles status:%r\n", __FUNCTION__, Status));
 
   //
   // Generic way to connect all the drivers
   //
-  BmConnectAllDriversToAllControllers ();
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
+  BmConnectAllDriversToAllControllers ();  // Connect all the drivers to all the controllers
+
+  DEBUG ((DEBUG_ERROR, "%a 222333\n", __FUNCTION__));
 
   //
   // Here we have the assumption that we have already had
   // platform default console
   //
-  EfiBootManagerConnectAllDefaultConsoles ();
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
+  Status = EfiBootManagerConnectAllDefaultConsoles ();
+
+  DEBUG ((DEBUG_ERROR, "%a EfiBootManagerConnectAllDefaultConsoles status:%r\n", __FUNCTION__, Status));
 }
 
 /**
@@ -116,10 +131,17 @@ EfiBootManagerConnectDevicePath (
   EFI_HANDLE                PreviousHandle;
   EFI_TPL                   CurrentTpl;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
+  DEBUG ((DEBUG_ERROR, "%a DevicePathToConnect->Type = %d\n", __FUNCTION__, DevicePathToConnect->Type));
+  DEBUG ((DEBUG_ERROR, "%a DevicePathToConnect->SubType = %d\n", __FUNCTION__, DevicePathToConnect->SubType));
+  DEBUG ((DEBUG_ERROR, "%a DevicePathToConnect->Length = %d\n", __FUNCTION__, DevicePathToConnect->Length));
+
   if (DevicePathToConnect == NULL) {
+    DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
     return EFI_INVALID_PARAMETER;
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   CurrentTpl = EfiGetCurrentTpl ();
   //
   // Start the real work of connect with RemainingDevicePath
@@ -131,6 +153,7 @@ EfiBootManagerConnectDevicePath (
     // partial match the remaining part of the device path is returned in
     // RemainingDevicePath.
     //
+    DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
     RemainingDevicePath = DevicePathToConnect;
     Status              = gBS->LocateDevicePath (&gEfiDevicePathProtocolGuid, &RemainingDevicePath, &Handle);
     if (!EFI_ERROR (Status)) {
@@ -142,6 +165,7 @@ EfiBootManagerConnectDevicePath (
         // Status == EFI_SUCCESS means a driver was dispatched
         // Status == EFI_NOT_FOUND means no new drivers were dispatched
         //
+        DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
         if (CurrentTpl == TPL_APPLICATION) {
           Status = gDS->Dispatch ();
         } else {
@@ -149,11 +173,13 @@ EfiBootManagerConnectDevicePath (
           // Always return EFI_NOT_FOUND here
           // to prevent dead loop when control handle is found but connection failded case
           //
+          DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
           Status = EFI_NOT_FOUND;
         }
       }
 
       if (!EFI_ERROR (Status)) {
+        DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
         PreviousHandle = Handle;
         //
         // Connect all drivers that apply to Handle and RemainingDevicePath,
@@ -169,12 +195,15 @@ EfiBootManagerConnectDevicePath (
         //    change, then avoid the dispatch, we have chance to continue the
         //    next connection
         //
+        DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
         Status = gBS->ConnectController (Handle, NULL, RemainingDevicePath, FALSE);
         if (Status == EFI_NOT_FOUND) {
+          DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
           Status = EFI_SUCCESS;
         }
 
         if (MatchingHandle != NULL) {
+          DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
           *MatchingHandle = Handle;
         }
       }
@@ -187,6 +216,7 @@ EfiBootManagerConnectDevicePath (
 
   ASSERT (EFI_ERROR (Status) || IsDevicePathEnd (RemainingDevicePath));
 
+  DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
   return Status;
 }
 

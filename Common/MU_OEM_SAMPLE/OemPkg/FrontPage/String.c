@@ -30,12 +30,15 @@ InitializeStringSupport (
   VOID
   )
 {
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
+
   gStringPackHandle = HiiAddPackages (
                         &mFrontPageStringPackGuid,
                         gImageHandle,
                         FrontPageStrings,
                         NULL
                         );
+DEBUG ((DEBUG_ERROR, "gStringPackHandle value: %p\n", gStringPackHandle));
 }
 
 /**

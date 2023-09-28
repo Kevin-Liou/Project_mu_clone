@@ -42,6 +42,7 @@ BmGetVideoController (
   //
   // Make all the PCI_IO protocols show up
   //
+  DEBUG ((DEBUG_ERROR, "%a www0014\n", __FUNCTION__));
   Status = gBS->LocateHandleBuffer (
                   ByProtocol,
                   &gEfiPciRootBridgeIoProtocolGuid,
@@ -50,9 +51,11 @@ BmGetVideoController (
                   &RootBridgeHandleBuffer
                   );
   if (EFI_ERROR (Status) || (RootBridgeHandleCount == 0)) {
+    DEBUG ((DEBUG_ERROR, "%a www0015\n", __FUNCTION__));
     return NULL;
   }
 
+  DEBUG ((DEBUG_ERROR, "%a www0016\n", __FUNCTION__));
   VideoController = NULL;
   for (RootBridgeIndex = 0; RootBridgeIndex < RootBridgeHandleCount; RootBridgeIndex++) {
     gBS->ConnectController (RootBridgeHandleBuffer[RootBridgeIndex], NULL, NULL, FALSE);
@@ -60,6 +63,7 @@ BmGetVideoController (
     //
     // Start to check all the pci io to find the first video controller
     //
+    DEBUG ((DEBUG_ERROR, "%a www0017\n", __FUNCTION__));
     Status = gBS->LocateHandleBuffer (
                     ByProtocol,
                     &gEfiPciIoProtocolGuid,
@@ -68,6 +72,7 @@ BmGetVideoController (
                     &HandleBuffer
                     );
     if (EFI_ERROR (Status)) {
+      DEBUG ((DEBUG_ERROR, "%a www0018\n", __FUNCTION__));
       continue;
     }
 
@@ -77,6 +82,7 @@ BmGetVideoController (
         //
         // Check for all video controller
         //
+        DEBUG ((DEBUG_ERROR, "%a www0019\n", __FUNCTION__));
         Status = PciIo->Pci.Read (
                               PciIo,
                               EfiPciIoWidthUint32,
@@ -86,6 +92,7 @@ BmGetVideoController (
                               );
         if (!EFI_ERROR (Status) && IS_PCI_VGA (&Pci)) {
           // TODO: use IS_PCI_DISPLAY??
+          DEBUG ((DEBUG_ERROR, "%a www0020\n", __FUNCTION__));
           VideoController = HandleBuffer[Index];
           break;
         }
@@ -95,6 +102,7 @@ BmGetVideoController (
     FreePool (HandleBuffer);
 
     if (VideoController != NULL) {
+      DEBUG ((DEBUG_ERROR, "%a www0021\n", __FUNCTION__));
       break;
     }
   }
@@ -132,6 +140,7 @@ EfiBootManagerGetGopDevicePath (
   EFI_DEVICE_PATH_PROTOCOL             *GopPool;
   EFI_DEVICE_PATH_PROTOCOL             *ReturnDevicePath;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   Status = gBS->ProtocolsPerHandle (
                   VideoController,
                   &ProtocolBuffer,
@@ -143,6 +152,7 @@ EfiBootManagerGetGopDevicePath (
 
   GopPool = NULL;
 
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   for (ProtocolIndex = 0; ProtocolIndex < ProtocolBufferCount; ProtocolIndex++) {
     Status = gBS->OpenProtocolInformation (
                     VideoController,
@@ -154,6 +164,7 @@ EfiBootManagerGetGopDevicePath (
       continue;
     }
 
+    DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
     for (Index = 0; Index < EntryCount; Index++) {
       //
       // Query all the children
@@ -173,12 +184,16 @@ EfiBootManagerGetGopDevicePath (
 
         Previous = NULL;
         for (Next = DevicePath; !IsDevicePathEnd (Next); Next = NextDevicePathNode (Next)) {
+          DEBUG ((DEBUG_ERROR, "%a 333444\n", __FUNCTION__));
           Previous = Next;
         }
 
         ASSERT (Previous != NULL);
-
+        DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
+        DEBUG ((DEBUG_ERROR, "%a DevicePathType (Previous) == %d\n", __FUNCTION__,DevicePathType (Previous)));
+        DEBUG ((DEBUG_ERROR, "%a DevicePathSubType (Previous) == %d\n", __FUNCTION__,DevicePathSubType (Previous)));
         if ((DevicePathType (Previous) == ACPI_DEVICE_PATH) && (DevicePathSubType (Previous) == ACPI_ADR_DP)) {
+          DEBUG ((DEBUG_ERROR, "%a 444zzz555\n", __FUNCTION__));
           Status = gBS->OpenProtocol (
                           OpenInfoBuffer[Index].ControllerHandle,
                           &gEfiGraphicsOutputProtocolGuid,
@@ -191,6 +206,7 @@ EfiBootManagerGetGopDevicePath (
             //
             // Append the device path to GOP pool when there is GOP protocol installed.
             //
+            DEBUG ((DEBUG_ERROR, "%a 444555\n", __FUNCTION__));
             TempDevicePath = GopPool;
             GopPool        = AppendDevicePathInstance (GopPool, DevicePath);
             if (TempDevicePath != NULL) {
@@ -203,8 +219,9 @@ EfiBootManagerGetGopDevicePath (
           //
           // Recursively look for GOP child in this frame buffer handle
           //
-          DEBUG ((DEBUG_INFO, "[Bds] Looking for GOP child deeper ... \n"));
+          DEBUG ((DEBUG_ERROR, "[Bds] Looking for GOP child deeper ... \n"));
           TempDevicePath   = GopPool;
+          DEBUG ((DEBUG_ERROR, "%a 555666\n", __FUNCTION__));
           ReturnDevicePath = EfiBootManagerGetGopDevicePath (OpenInfoBuffer[Index].ControllerHandle);
           // MU_CHANGE verify ReturnDevicePath is valid before Appending
           if (ReturnDevicePath != NULL) {
@@ -243,14 +260,18 @@ EfiBootManagerConnectVideoController (
 {
   EFI_DEVICE_PATH_PROTOCOL  *Gop;
 
+  DEBUG ((DEBUG_ERROR, "%a www006\n", __FUNCTION__));
+
   if (VideoController == NULL) {
     //
     // Get the platform vga device
     //
+    DEBUG ((DEBUG_ERROR, "%a www007\n", __FUNCTION__));
     VideoController = BmGetVideoController ();
   }
 
   if (VideoController == NULL) {
+    DEBUG ((DEBUG_ERROR, "%a www008\n", __FUNCTION__));
     return EFI_NOT_FOUND;
   }
 
@@ -260,19 +281,24 @@ EfiBootManagerConnectVideoController (
   // on them, then we get device paths of these child handles and select
   // them as possible console device.
   //
+  DEBUG ((DEBUG_ERROR, "%a www009\n", __FUNCTION__));
   gBS->ConnectController (VideoController, NULL, NULL, FALSE);
 
+  DEBUG ((DEBUG_ERROR, "%a www0010\n", __FUNCTION__));
   Gop = EfiBootManagerGetGopDevicePath (VideoController);
   if (Gop == NULL) {
+    DEBUG ((DEBUG_ERROR, "%a www0011\n", __FUNCTION__));
     return EFI_NOT_FOUND;
   }
 
   EfiBootManagerUpdateConsoleVariable (ConOut, Gop, NULL);
+  DEBUG ((DEBUG_ERROR, "%a www0012\n", __FUNCTION__));
   FreePool (Gop);
 
   //
   // Necessary for ConPlatform and ConSplitter driver to start up again after ConOut is updated.
   //
+  DEBUG ((DEBUG_ERROR, "%a www0013\n", __FUNCTION__));
   return gBS->ConnectController (VideoController, NULL, NULL, TRUE);
 }
 
@@ -456,6 +482,7 @@ EfiBootManagerUpdateConsoleVariable (
   //
   // Initialize NewDevicePath
   //
+  DEBUG ((DEBUG_ERROR, "%a VarConsole = %x\n", __FUNCTION__, VarConsole));
   NewDevicePath = VarConsole;
 
   //
@@ -463,6 +490,7 @@ EfiBootManagerUpdateConsoleVariable (
   // In the end, NewDevicePath is the final device path.
   //
   if ((ExclusiveDevicePath != NULL) && (VarConsole != NULL)) {
+    DEBUG ((DEBUG_ERROR, "%a xxx011\n", __FUNCTION__));
     NewDevicePath = BmDelPartMatchInstance (VarConsole, ExclusiveDevicePath);
   }
 
@@ -470,10 +498,12 @@ EfiBootManagerUpdateConsoleVariable (
   // Try to append customized device path to NewDevicePath.
   //
   if (CustomizedConDevicePath != NULL) {
+    DEBUG ((DEBUG_ERROR, "%a xxx012\n", __FUNCTION__));
     if (!BmMatchDevicePaths (NewDevicePath, CustomizedConDevicePath)) {
       //
       // Check if there is part of CustomizedConDevicePath in NewDevicePath, delete it.
       //
+      DEBUG ((DEBUG_ERROR, "%a xxx013\n", __FUNCTION__));
       NewDevicePath = BmDelPartMatchInstance (NewDevicePath, CustomizedConDevicePath);
       // MU_CHANGE - Verify NewDevicePath is valid before using it
       if (NewDevicePath != NULL) {
@@ -486,6 +516,7 @@ EfiBootManagerUpdateConsoleVariable (
 
       NewDevicePath = AppendDevicePathInstance (NewDevicePath, CustomizedConDevicePath);
       if (TempNewDevicePath != NULL) {
+        DEBUG ((DEBUG_ERROR, "%a xxx014\n", __FUNCTION__));
         FreePool (TempNewDevicePath);
       }
     }
@@ -507,14 +538,17 @@ EfiBootManagerUpdateConsoleVariable (
 
   if (VarConsole == NewDevicePath) {
     if (VarConsole != NULL) {
+      DEBUG ((DEBUG_ERROR, "%a xxx016\n", __FUNCTION__));
       FreePool (VarConsole);
     }
   } else {
     if (VarConsole != NULL) {
+      DEBUG ((DEBUG_ERROR, "%a xxx017\n", __FUNCTION__));
       FreePool (VarConsole);
     }
 
     if (NewDevicePath != NULL) {
+      DEBUG ((DEBUG_ERROR, "%a xxx018\n", __FUNCTION__));
       FreePool (NewDevicePath);
     }
   }
@@ -548,6 +582,9 @@ EfiBootManagerConnectConsoleVariable (
   BOOLEAN                   DeviceExist;
   EFI_HANDLE                Handle;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
+  DEBUG ((DEBUG_ERROR, "%a ConsoleType = %d\n", __FUNCTION__, ConsoleType));
+
   if ((ConsoleType != ConIn) && (ConsoleType != ConOut) && (ConsoleType != ErrOut)) {
     return EFI_INVALID_PARAMETER;
   }
@@ -559,8 +596,10 @@ EfiBootManagerConnectConsoleVariable (
   //
   // Check if the console variable exist
   //
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   GetEfiGlobalVariable2 (mConVarName[ConsoleType], (VOID **)&StartDevicePath, NULL);
   if (StartDevicePath == NULL) {
+    DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
     return EFI_UNSUPPORTED;
   }
 
@@ -569,17 +608,21 @@ EfiBootManagerConnectConsoleVariable (
     //
     // Check every instance of the console variable
     //
+    DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
     Instance = GetNextDevicePathInstance (&CopyOfDevicePath, &Size);
     if (Instance == NULL) {
+      DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
       FreePool (StartDevicePath);
       return EFI_UNSUPPORTED;
     }
 
     Next = Instance;
+    DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
     while (!IsDevicePathEndType (Next)) {
       Next = NextDevicePathNode (Next);
     }
 
+    DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
     SetDevicePathEndNode (Next);
     //
     // Connect the USB console
@@ -587,17 +630,25 @@ EfiBootManagerConnectConsoleVariable (
     //  starts with the first element being a USB WWID
     //  or a USB Class device path
     //
+    DEBUG ((DEBUG_ERROR, "%a DevicePathType (Instance) = %d\n", __FUNCTION__,DevicePathType (Instance)));
+    DEBUG ((DEBUG_ERROR, "%a DevicePathSubType (Instance) = %d\n", __FUNCTION__,DevicePathSubType (Instance)));
     if ((DevicePathType (Instance) == MESSAGING_DEVICE_PATH) &&
         ((DevicePathSubType (Instance) == MSG_USB_CLASS_DP) || (DevicePathSubType (Instance) == MSG_USB_WWID_DP))
         )
     {
+      DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
       Status = BmConnectUsbShortFormDevicePath (Instance);
       if (!EFI_ERROR (Status)) {
+        DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
         DeviceExist = TRUE;
       }
     } else {
+      DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
       for (Next = Instance; !IsDevicePathEnd (Next); Next = NextDevicePathNode (Next)) {
+        DEBUG ((DEBUG_ERROR, "%a DevicePathType (Next) = %d\n", __FUNCTION__, DevicePathType (Next)));
+        DEBUG ((DEBUG_ERROR, "%a DevicePathSubType (Next) = %d\n", __FUNCTION__, DevicePathSubType (Next)));
         if ((DevicePathType (Next) == ACPI_DEVICE_PATH) && (DevicePathSubType (Next) == ACPI_ADR_DP)) {
+          DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
           break;
         } else if ((DevicePathType (Next) == HARDWARE_DEVICE_PATH) &&
                    (DevicePathSubType (Next) == HW_CONTROLLER_DP) &&
@@ -605,6 +656,7 @@ EfiBootManagerConnectConsoleVariable (
                    (DevicePathSubType (NextDevicePathNode (Next)) == ACPI_ADR_DP)
                    )
         {
+          DEBUG ((DEBUG_ERROR, "%a bbb\n", __FUNCTION__));
           break;
         }
       }
@@ -613,12 +665,15 @@ EfiBootManagerConnectConsoleVariable (
         //
         // For GOP device path, start the video driver with NULL remaining device path
         //
+        DEBUG ((DEBUG_ERROR, "%a ccc\n", __FUNCTION__));
         SetDevicePathEndNode (Next);
         Status = EfiBootManagerConnectDevicePath (Instance, &Handle);
         if (!EFI_ERROR (Status)) {
+          DEBUG ((DEBUG_ERROR, "%a ddd\n", __FUNCTION__));
           gBS->ConnectController (Handle, NULL, NULL, TRUE);
         }
       } else {
+        DEBUG ((DEBUG_ERROR, "%a eee\n", __FUNCTION__));
         Status = EfiBootManagerConnectDevicePath (Instance, NULL);
       }
 
@@ -626,18 +681,22 @@ EfiBootManagerConnectConsoleVariable (
         //
         // Delete the instance from the console varialbe
         //
+        DEBUG ((DEBUG_ERROR, "%a fff\n", __FUNCTION__));
         EfiBootManagerUpdateConsoleVariable (ConsoleType, NULL, Instance);
       } else {
+        DEBUG ((DEBUG_ERROR, "%a ggg\n", __FUNCTION__));
         DeviceExist = TRUE;
       }
     }
-
+    DEBUG ((DEBUG_ERROR, "%a hhh\n", __FUNCTION__));
     FreePool (Instance);
   } while (CopyOfDevicePath != NULL);
 
+  DEBUG ((DEBUG_ERROR, "%a iii\n", __FUNCTION__));
   FreePool (StartDevicePath);
 
   if (!DeviceExist) {
+    DEBUG ((DEBUG_ERROR, "%a jjj\n", __FUNCTION__));
     return EFI_NOT_FOUND;
   }
 
@@ -667,6 +726,7 @@ EfiBootManagerConnectAllConsoles (
   //
   // Update all the console variables
   //
+  DEBUG ((DEBUG_ERROR, "%a xxx019\n", __FUNCTION__));
   gBS->LocateHandleBuffer (
          ByProtocol,
          &gEfiSimpleTextInProtocolGuid,
@@ -681,6 +741,7 @@ EfiBootManagerConnectAllConsoles (
            &gEfiDevicePathProtocolGuid,
            (VOID **)&ConDevicePath
            );
+    DEBUG ((DEBUG_ERROR, "%a xxx020\n", __FUNCTION__));
     EfiBootManagerUpdateConsoleVariable (ConIn, ConDevicePath, NULL);
   }
 
@@ -689,6 +750,7 @@ EfiBootManagerConnectAllConsoles (
     HandleBuffer = NULL;
   }
 
+  DEBUG ((DEBUG_ERROR, "%a xxx021\n", __FUNCTION__));
   gBS->LocateHandleBuffer (
          ByProtocol,
          &gEfiSimpleTextOutProtocolGuid,
@@ -697,12 +759,15 @@ EfiBootManagerConnectAllConsoles (
          &HandleBuffer
          );
   for (Index = 0; Index < HandleCount; Index++) {
+    DEBUG ((DEBUG_ERROR, "%a xxx022\n", __FUNCTION__));
     gBS->HandleProtocol (
            HandleBuffer[Index],
            &gEfiDevicePathProtocolGuid,
            (VOID **)&ConDevicePath
            );
+    DEBUG ((DEBUG_ERROR, "%a xxx023\n", __FUNCTION__));
     EfiBootManagerUpdateConsoleVariable (ConOut, ConDevicePath, NULL);
+    DEBUG ((DEBUG_ERROR, "%a xxx024\n", __FUNCTION__));
     EfiBootManagerUpdateConsoleVariable (ErrOut, ConDevicePath, NULL);
   }
 
@@ -713,6 +778,7 @@ EfiBootManagerConnectAllConsoles (
   //
   // Connect all console variables
   //
+  DEBUG ((DEBUG_ERROR, "%a xxx025\n", __FUNCTION__));
   EfiBootManagerConnectAllDefaultConsoles ();
 }
 
@@ -734,23 +800,30 @@ EfiBootManagerConnectAllDefaultConsoles (
   BOOLEAN     OneConnected;
   BOOLEAN     SystemTableUpdated;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   OneConnected = FALSE;
 
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   Status = EfiBootManagerConnectConsoleVariable (ConOut);
+  DEBUG ((DEBUG_ERROR, "%a EfiBootManagerConnectConsoleVariable ConOut status:%r\n", __FUNCTION__, Status));
   if (!EFI_ERROR (Status)) {
     OneConnected = TRUE;
   }
 
   PERF_EVENT ("ConOutReady");
 
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   Status = EfiBootManagerConnectConsoleVariable (ConIn);
+  DEBUG ((DEBUG_ERROR, "%a EfiBootManagerConnectConsoleVariable ConIn status:%r\n", __FUNCTION__, Status));
   if (!EFI_ERROR (Status)) {
     OneConnected = TRUE;
   }
 
   PERF_EVENT ("ConInReady");
 
+  DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
   Status = EfiBootManagerConnectConsoleVariable (ErrOut);
+  DEBUG ((DEBUG_ERROR, "%a EfiBootManagerConnectConsoleVariable ErrOut status:%r\n", __FUNCTION__, Status));
   if (!EFI_ERROR (Status)) {
     OneConnected = TRUE;
   }
@@ -761,15 +834,19 @@ EfiBootManagerConnectAllDefaultConsoles (
   //
   // Fill console handles in System Table if no console device assignd.
   //
+  DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
   if (BmUpdateSystemTableConsole (L"ConIn", &gEfiSimpleTextInProtocolGuid, &gST->ConsoleInHandle, (VOID **)&gST->ConIn)) {
+    DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
     SystemTableUpdated = TRUE;
   }
 
   if (BmUpdateSystemTableConsole (L"ConOut", &gEfiSimpleTextOutProtocolGuid, &gST->ConsoleOutHandle, (VOID **)&gST->ConOut)) {
+    DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
     SystemTableUpdated = TRUE;
   }
 
   if (BmUpdateSystemTableConsole (L"ErrOut", &gEfiSimpleTextOutProtocolGuid, &gST->StandardErrorHandle, (VOID **)&gST->StdErr)) {
+    DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
     SystemTableUpdated = TRUE;
   }
 
@@ -777,6 +854,7 @@ EfiBootManagerConnectAllDefaultConsoles (
     //
     // Update the CRC32 in the EFI System Table header
     //
+    DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
     gST->Hdr.CRC32 = 0;
     gBS->CalculateCrc32 (
            (UINT8 *)&gST->Hdr,
@@ -784,6 +862,8 @@ EfiBootManagerConnectAllDefaultConsoles (
            &gST->Hdr.CRC32
            );
   }
+
+  DEBUG ((DEBUG_ERROR, "%a OneConnected:%x\n", __FUNCTION__, OneConnected));
 
   return OneConnected ? EFI_SUCCESS : EFI_DEVICE_ERROR;
 }

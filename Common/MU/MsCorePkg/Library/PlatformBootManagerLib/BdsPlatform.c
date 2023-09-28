@@ -72,6 +72,7 @@ ConnectRootBridge (
   BOOLEAN  Recursive
   )
 {
+  EFI_STATUS  Status;
   UINTN       RootBridgeHandleCount;
   EFI_HANDLE  *RootBridgeHandleBuffer;
   UINTN       RootBridgeIndex;
@@ -79,13 +80,14 @@ ConnectRootBridge (
   PERF_FUNCTION_BEGIN (); // MS_CHANGE
 
   RootBridgeHandleCount = 0;
-  gBS->LocateHandleBuffer (
-         ByProtocol,
-         &gEfiPciRootBridgeIoProtocolGuid,
-         NULL,
-         &RootBridgeHandleCount,
-         &RootBridgeHandleBuffer
-         );
+  Status = gBS->LocateHandleBuffer (
+          ByProtocol,
+          &gEfiPciRootBridgeIoProtocolGuid,
+          NULL,
+          &RootBridgeHandleCount,
+          &RootBridgeHandleBuffer
+          );
+  DEBUG ((DEBUG_ERROR, "%a gBS->LocateHandleBuffer:gEfiPciRootBridgeIoProtocolGuid status:%r\n", __FUNCTION__, Status));
   for (RootBridgeIndex = 0; RootBridgeIndex < RootBridgeHandleCount; RootBridgeIndex++) {
     gBS->ConnectController (RootBridgeHandleBuffer[RootBridgeIndex], NULL, NULL, Recursive);
   }
@@ -183,11 +185,13 @@ PlatformBootManagerBeforeConsole (
   EFI_HANDLE                 Handle;
   BDS_CONSOLE_CONNECT_ENTRY  *PlatformConsoles;
 
+  DEBUG ((DEBUG_ERROR, "%a aaa111\n", __FUNCTION__));
   mBootMode = GetBootModeHob ();  // BeforeConsole has to be called before AfterConsole.
 
   //
   // Append Usb Keyboard short form DevicePath into "ConIn"
   //
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   EfiBootManagerUpdateConsoleVariable (
     ConIn,
     (EFI_DEVICE_PATH_PROTOCOL *)&mUsbClassKeyboardDevicePath,
@@ -197,20 +201,24 @@ PlatformBootManagerBeforeConsole (
   //
   // Connect Root Bridge to make PCI BAR resource allocated and all PciIo created
   //
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   ConnectRootBridge (FALSE);
 
+  DEBUG ((DEBUG_ERROR, "%a aaa333\n", __FUNCTION__));
   TempDevicePath = NULL;
   Handle         = DeviceBootManagerBeforeConsole (&TempDevicePath, &PlatformConsoles);
 
   //
   // Update ConOut variable according to the Console Handle
   //
+  DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
   ConsoleOut = NULL;
   GetEfiGlobalVariable2 (L"ConOut", (VOID **)&ConsoleOut, NULL);
 
   if (Handle != NULL) {
     if (TempDevicePath != NULL) {
       Temp       = ConsoleOut;
+      DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
       ConsoleOut = UpdateGopDevicePath (ConsoleOut, TempDevicePath);
       if (Temp != NULL) {
         FreePool (Temp);
@@ -239,6 +247,7 @@ PlatformBootManagerBeforeConsole (
   //
   // Fill ConIn/ConOut in Full Configuration boot mode
   //
+  DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
   DEBUG ((DEBUG_INFO, "%a - %x\n", __FUNCTION__, mBootMode));
   if ((mBootMode == BOOT_WITH_FULL_CONFIGURATION) ||
       (mBootMode == BOOT_WITH_DEFAULT_SETTINGS) ||
@@ -251,14 +260,17 @@ PlatformBootManagerBeforeConsole (
         // Update the console variable with the connect type
         //
         if (((*PlatformConsoles).ConnectType & CONSOLE_IN) == CONSOLE_IN) {
+          DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
           EfiBootManagerUpdateConsoleVariable (ConIn, (*PlatformConsoles).DevicePath, NULL);
         }
 
         if (((*PlatformConsoles).ConnectType & CONSOLE_OUT) == CONSOLE_OUT) {
+          DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
           EfiBootManagerUpdateConsoleVariable (ConOut, (*PlatformConsoles).DevicePath, NULL);
         }
 
         if (((*PlatformConsoles).ConnectType & STD_ERROR) == STD_ERROR) {
+          DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
           EfiBootManagerUpdateConsoleVariable (ErrOut, (*PlatformConsoles).DevicePath, NULL);
         }
 
@@ -270,12 +282,13 @@ PlatformBootManagerBeforeConsole (
   //
   // Exit PM auth before Legacy OPROM run.
   //
-
+  DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
   ExitPmAuth ();
 
   //
   // Dispatch the deferred 3rd party images.
   //
+  DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
   EfiBootManagerDispatchDeferredImages ();
 }
 

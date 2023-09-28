@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "Setup.h"
+#include <Library/TimerLib.h>
 
 BOOLEAN                   mHiiPackageListUpdated;
 UI_MENU_SELECTION         *gCurrentSelection;
@@ -1753,16 +1754,19 @@ DisplayForm (
   USER_INPUT       UserInput;
   FORM_ENTRY_INFO  *CurrentMenu;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   ZeroMem (&UserInput, sizeof (USER_INPUT));
 
   //
   // Update the menu history data.
   //
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   CurrentMenu = UiFindMenuList (gCurrentSelection->Handle, &gCurrentSelection->FormSetGuid, gCurrentSelection->FormId);
   if (CurrentMenu == NULL) {
     //
     // Current menu not found, add it to the menu tree
     //
+    DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
     CurrentMenu = UiAddMenuList (
                     gCurrentSelection->Handle,
                     &gCurrentSelection->FormSetGuid,
@@ -1771,6 +1775,7 @@ DisplayForm (
                     );
     // MU_CHANGE [BEGIN] - CodeQL change
     if (CurrentMenu == NULL) {
+      DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
       ASSERT (CurrentMenu != NULL);
       return EFI_OUT_OF_RESOURCES;
     }
@@ -1781,34 +1786,45 @@ DisplayForm (
   //
   // Back up the form view history data for this form.
   //
+  DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
   UiCopyMenuList (&gCurrentSelection->Form->FormViewListHead, &mPrivateData.FormBrowserEx2.FormViewHistoryHead);
 
+  DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
   gCurrentSelection->CurrentMenu = CurrentMenu;
 
   if (gCurrentSelection->QuestionId == 0) {
     //
     // Highlight not specified, fetch it from cached menu
     //
+    DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
     gCurrentSelection->QuestionId = CurrentMenu->QuestionId;
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
   Status = EvaluateFormExpressions (gCurrentSelection->FormSet, gCurrentSelection->Form);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
     return Status;
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
   UpdateDisplayFormData ();
 
   ASSERT (gDisplayFormData.BrowserStatus == BROWSER_SUCCESS);
+  DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
   Status = mFormDisplay->FormDisplay (&gDisplayFormData, &UserInput);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a bbb\n", __FUNCTION__));
     FreeDisplayFormData ();
     return Status;
   }
 
+  DEBUG ((DEBUG_ERROR, "%a ccc\n", __FUNCTION__));
   CheckConfigAccess (gCurrentSelection->FormSet);
 
+  DEBUG ((DEBUG_ERROR, "%a ddd\n", __FUNCTION__));
   Status = ProcessUserInput (&UserInput);
+  DEBUG ((DEBUG_ERROR, "%a eee\n", __FUNCTION__));
   FreeDisplayFormData ();
   return Status;
 }
@@ -2443,11 +2459,13 @@ SetupBrowser (
   FORM_BROWSER_STATEMENT          *Statement;
   EFI_HII_CONFIG_ACCESS_PROTOCOL  *ConfigAccess;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   ConfigAccess = Selection->FormSet->ConfigAccess;
 
   //
   // Register notify for Form package update
   //
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   Status = mHiiDatabase->RegisterPackageNotify (
                            mHiiDatabase,
                            EFI_HII_PACKAGE_FORMS,
@@ -2456,6 +2474,7 @@ SetupBrowser (
                            EFI_HII_DATABASE_NOTIFY_REMOVE_PACK,
                            &NotifyHandle
                            );
+  DEBUG ((DEBUG_ERROR, "%a mHiiDatabase->RegisterPackageNotify status:%r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     return Status;
   }
@@ -2463,22 +2482,26 @@ SetupBrowser (
   //
   // Initialize current settings of Questions in this FormSet
   //
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   InitializeCurrentSetting (Selection->FormSet);
 
   //
   // Initilize Action field.
   //
+  DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
   Selection->Action = UI_ACTION_REFRESH_FORM;
 
   //
   // Clean the mCurFakeQestId value is formset refreshed.
   //
+  DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
   mCurFakeQestId = 0;
 
   do {
     //
     // Reset Status to prevent the next break from returning incorrect error status.
     //
+    DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
     Status = EFI_SUCCESS;
 
     //
@@ -2486,7 +2509,9 @@ SetupBrowser (
     // This check is shared by EFI_BROWSER_ACTION_FORM_CLOSE and
     // EFI_BROWSER_ACTION_RETRIEVE, so code place here.
     //
+    DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
     if (mHiiPackageListUpdated) {
+      DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
       Selection->Action      = UI_ACTION_REFRESH_FORMSET;
       mHiiPackageListUpdated = FALSE;
       break;
@@ -2499,11 +2524,13 @@ SetupBrowser (
       //
       // Zero FormId indicates display the first Form in a FormSet
       //
+      DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
       Link = GetFirstNode (&Selection->FormSet->FormListHead);
 
       Selection->Form   = FORM_BROWSER_FORM_FROM_LINK (Link);
       Selection->FormId = Selection->Form->FormId;
     } else {
+      DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
       Selection->Form = IdToForm (Selection->FormSet, Selection->FormId);
     }
 
@@ -2511,6 +2538,7 @@ SetupBrowser (
       //
       // No Form to display
       //
+      DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
       Status = EFI_NOT_FOUND;
       goto Done;
     }
@@ -2519,10 +2547,12 @@ SetupBrowser (
     // Check Form is suppressed.
     //
     if (Selection->Form->SuppressExpression != NULL) {
+      DEBUG ((DEBUG_ERROR, "%a bbb\n", __FUNCTION__));
       if (EvaluateExpressionList (Selection->Form->SuppressExpression, TRUE, Selection->FormSet, Selection->Form) == ExpressSuppress) {
         //
         // Form is suppressed.
         //
+        DEBUG ((DEBUG_ERROR, "%a ccc\n", __FUNCTION__));
         PopupErrorMessage (BROWSER_FORM_SUPPRESS, NULL, NULL, NULL);
         Status = EFI_NOT_FOUND;
         goto Done;
@@ -2541,6 +2571,7 @@ SetupBrowser (
       //
       // Update Retrieve flag.
       //
+      DEBUG ((DEBUG_ERROR, "%a ddd\n", __FUNCTION__));
       mFinishRetrieveCall = FALSE;
 
       //
@@ -2551,8 +2582,10 @@ SetupBrowser (
       mCurrentFormId = Selection->FormId;
 
       if (ConfigAccess != NULL) {
+        DEBUG ((DEBUG_ERROR, "%a eee\n", __FUNCTION__));
         Status = ProcessCallBackFunction (Selection, Selection->FormSet, Selection->Form, NULL, EFI_BROWSER_ACTION_FORM_OPEN, FALSE);
         if (EFI_ERROR (Status)) {
+          DEBUG ((DEBUG_ERROR, "%a fff\n", __FUNCTION__));
           goto Done;
         }
 
@@ -2560,6 +2593,7 @@ SetupBrowser (
         // IFR is updated during callback of EFI_BROWSER_ACTION_FORM_OPEN, force to reparse the IFR binary
         //
         if (mHiiPackageListUpdated) {
+          DEBUG ((DEBUG_ERROR, "%a ggg\n", __FUNCTION__));
           Selection->Action      = UI_ACTION_REFRESH_FORMSET;
           mHiiPackageListUpdated = FALSE;
           break;
@@ -2570,8 +2604,10 @@ SetupBrowser (
     //
     // Load Questions' Value for display
     //
+    DEBUG ((DEBUG_ERROR, "%a hhh\n", __FUNCTION__));
     Status = LoadFormSetConfig (Selection, Selection->FormSet);
     if (EFI_ERROR (Status)) {
+      DEBUG ((DEBUG_ERROR, "%a iii\n", __FUNCTION__));
       goto Done;
     }
 
@@ -2579,11 +2615,14 @@ SetupBrowser (
       //
       // Finish call RETRIEVE callback for this form.
       //
+      DEBUG ((DEBUG_ERROR, "%a jjj\n", __FUNCTION__));
       mFinishRetrieveCall = TRUE;
 
       if (ConfigAccess != NULL) {
+        DEBUG ((DEBUG_ERROR, "%a kkk\n", __FUNCTION__));
         Status = ProcessCallBackFunction (Selection, Selection->FormSet, Selection->Form, NULL, EFI_BROWSER_ACTION_RETRIEVE, FALSE);
         if (EFI_ERROR (Status)) {
+          DEBUG ((DEBUG_ERROR, "%a lll\n", __FUNCTION__));
           goto Done;
         }
 
@@ -2591,6 +2630,7 @@ SetupBrowser (
         // IFR is updated during callback of open form, force to reparse the IFR binary
         //
         if (mHiiPackageListUpdated) {
+          DEBUG ((DEBUG_ERROR, "%a mmm\n", __FUNCTION__));
           Selection->Action      = UI_ACTION_REFRESH_FORMSET;
           mHiiPackageListUpdated = FALSE;
           break;
@@ -2601,8 +2641,10 @@ SetupBrowser (
     //
     // Display form
     //
+    DEBUG ((DEBUG_ERROR, "%a nnn\n", __FUNCTION__));
     Status = DisplayForm ();
     if (EFI_ERROR (Status)) {
+      DEBUG ((DEBUG_ERROR, "%a ooo\n", __FUNCTION__));
       goto Done;
     }
 
@@ -2611,16 +2653,20 @@ SetupBrowser (
     //
     Statement = Selection->Statement;
     if (Statement != NULL) {
+      DEBUG ((DEBUG_ERROR, "%a ppp\n", __FUNCTION__));
       if ((ConfigAccess != NULL) &&
           ((Statement->QuestionFlags & EFI_IFR_FLAG_CALLBACK) == EFI_IFR_FLAG_CALLBACK) &&
           (Statement->Operand != EFI_IFR_PASSWORD_OP))
       {
+        DEBUG ((DEBUG_ERROR, "%a qqq\n", __FUNCTION__));
         Status = ProcessCallBackFunction (Selection, Selection->FormSet, Selection->Form, Statement, EFI_BROWSER_ACTION_CHANGING, FALSE);
         if (Statement->Operand == EFI_IFR_REF_OP) {
           //
           // Process dynamic update ref opcode.
           //
+          DEBUG ((DEBUG_ERROR, "%a rrr\n", __FUNCTION__));
           if (!EFI_ERROR (Status)) {
+            DEBUG ((DEBUG_ERROR, "%a sss\n", __FUNCTION__));
             Status = ProcessGotoOpCode (Statement, Selection);
           }
 
@@ -2631,6 +2677,7 @@ SetupBrowser (
             //
             // Cross reference will not be taken, restore all essential field
             //
+            DEBUG ((DEBUG_ERROR, "%a ttt\n", __FUNCTION__));
             Selection->Handle = mCurrentHiiHandle;
             CopyMem (&Selection->FormSetGuid, &mCurrentFormSetGuid, sizeof (EFI_GUID));
             Selection->FormId     = mCurrentFormId;
@@ -2646,23 +2693,28 @@ SetupBrowser (
           //
           // Only question value has been changed, browser will trig CHANGED callback.
           //
+          DEBUG ((DEBUG_ERROR, "%a uuu\n", __FUNCTION__));
           ProcessCallBackFunction (Selection, Selection->FormSet, Selection->Form, Statement, EFI_BROWSER_ACTION_CHANGED, FALSE);
           //
           // check whether the question value changed compared with buffer value
           // if doesn't change ,set the ValueChanged flag to FALSE ,in order not to display the "configuration changed "information on the screen
           //
+          DEBUG ((DEBUG_ERROR, "%a vvv\n", __FUNCTION__));
           IsQuestionValueChanged (gCurrentSelection->FormSet, gCurrentSelection->Form, Statement, GetSetValueWithBuffer);
         }
       } else {
         //
         // Do the question validation.
         //
+        DEBUG ((DEBUG_ERROR, "%a www\n", __FUNCTION__));
         Status = ValueChangedValidation (gCurrentSelection->FormSet, gCurrentSelection->Form, Statement);
         if (!EFI_ERROR (Status) && (Statement->Operand != EFI_IFR_PASSWORD_OP)) {
+          DEBUG ((DEBUG_ERROR, "%a xxx\n", __FUNCTION__));
           SetQuestionValue (gCurrentSelection->FormSet, gCurrentSelection->Form, Statement, GetSetValueWithEditBuffer);
           //
           // Verify whether question value has checked, update the ValueChanged flag in Question.
           //
+          DEBUG ((DEBUG_ERROR, "%a yyy\n", __FUNCTION__));
           IsQuestionValueChanged (gCurrentSelection->FormSet, gCurrentSelection->Form, Statement, GetSetValueWithBuffer);
         }
       }
@@ -2674,12 +2726,15 @@ SetupBrowser (
       if ((Status == EFI_SUCCESS) &&
           (Statement->Storage == NULL))
       {
+        DEBUG ((DEBUG_ERROR, "%a zzz\n", __FUNCTION__));
         if ((Statement->QuestionFlags & EFI_IFR_FLAG_RESET_REQUIRED) != 0) {
+          DEBUG ((DEBUG_ERROR, "%a a001\n", __FUNCTION__));
           gResetRequiredFormLevel   = TRUE;
           gResetRequiredSystemLevel = TRUE;
         }
 
         if ((Statement->QuestionFlags & EFI_IFR_FLAG_RECONNECT_REQUIRED) != 0) {
+          DEBUG ((DEBUG_ERROR, "%a a002\n", __FUNCTION__));
           gFlagReconnect = TRUE;
         }
       }
@@ -2688,18 +2743,22 @@ SetupBrowser (
     //
     // Check whether Exit flag is TRUE.
     //
+    DEBUG ((DEBUG_ERROR, "%a a003\n", __FUNCTION__));
     if (gExitRequired) {
       switch (gBrowserSettingScope) {
         case SystemLevel:
+          DEBUG ((DEBUG_ERROR, "%a a004\n", __FUNCTION__));
           Selection->Action = UI_ACTION_EXIT;
           break;
 
         case FormSetLevel:
         case FormLevel:
+          DEBUG ((DEBUG_ERROR, "%a a005\n", __FUNCTION__));
           FindNextMenu (Selection, gBrowserSettingScope);
           break;
 
         default:
+          DEBUG ((DEBUG_ERROR, "%a a006\n", __FUNCTION__));
           break;
       }
 
@@ -2716,8 +2775,10 @@ SetupBrowser (
          (!CompareGuid (&Selection->FormSetGuid, &mCurrentFormSetGuid)) ||
          (Selection->FormId != mCurrentFormId)))
     {
+      DEBUG ((DEBUG_ERROR, "%a a007\n", __FUNCTION__));
       Status = ProcessCallBackFunction (Selection, Selection->FormSet, Selection->Form, NULL, EFI_BROWSER_ACTION_FORM_CLOSE, FALSE);
       if (EFI_ERROR (Status)) {
+        DEBUG ((DEBUG_ERROR, "%a a008\n", __FUNCTION__));
         goto Done;
       }
     }
@@ -2728,6 +2789,7 @@ Done:
   // Reset current form information to the initial setting when error happens or form exit.
   //
   if (EFI_ERROR (Status) || (Selection->Action == UI_ACTION_EXIT)) {
+    DEBUG ((DEBUG_ERROR, "%a a009\n", __FUNCTION__));
     mCurrentHiiHandle = NULL;
     CopyGuid (&mCurrentFormSetGuid, &gZeroGuid);
     mCurrentFormId = 0;
@@ -2736,6 +2798,7 @@ Done:
   //
   // Unregister notify for Form package update
   //
+  DEBUG ((DEBUG_ERROR, "%a a010\n", __FUNCTION__));
   mHiiDatabase->UnregisterPackageNotify (
                   mHiiDatabase,
                   NotifyHandle

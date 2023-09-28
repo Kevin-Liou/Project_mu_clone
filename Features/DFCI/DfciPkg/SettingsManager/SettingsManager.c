@@ -92,6 +92,7 @@ InternalSystemSettingAccessSet (
 
   // Check Auth for the setting Id.
   Status = HasWritePermissions (Id, AuthToken, &AuthStatus);
+  DEBUG ((DEBUG_ERROR, "%a - HasWritePermissions returned %r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a - HasWritePermissions returned an error %r\n", __FUNCTION__, Status));
     return Status;
@@ -220,6 +221,8 @@ InternalSystemSettingAccessGet (
   UINT8                   MasterValue;
   UINTN                   LocalSize;
 
+
+  DEBUG ((DEBUG_ERROR, "%a Start - Requested ID (%a).\n", __FUNCTION__, Id));
   // Check parameters
   if ((This == NULL) || (Value == NULL)) {
     return EFI_INVALID_PARAMETER;
@@ -262,6 +265,7 @@ InternalSystemSettingAccessGet (
                      &LocalValue,
                      Flags
                      );
+      DEBUG ((DEBUG_ERROR, "%a - InternalSystemSettingAccessGet returned %r\n", __FUNCTION__, Status));
       GetRecurse = FALSE;
       if (EFI_ERROR (Status)) {
         DEBUG ((DEBUG_ERROR, "%a: Unexpected return from AccessGet. Code=%r\n", __FUNCTION__, Status));
@@ -309,6 +313,7 @@ InternalSystemSettingAccessGet (
   //
   // Go check the permission
   //
+  DEBUG ((DEBUG_INFO, "%a - Checking permission for %a\n", __FUNCTION__, Id));
   if ((AuthToken != NULL) && (Flags != NULL)) {
     BOOLEAN  AuthStatus = FALSE;
     Status = HasWritePermissions (Id, AuthToken, &AuthStatus);

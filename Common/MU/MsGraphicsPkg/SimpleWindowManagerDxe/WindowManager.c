@@ -1040,6 +1040,7 @@ SWMDriverSupported (
   // Absolute Pointer protocol interface as well as aggregates Absolute Pointer protocol providers).
   // Note that we may attach through ConSplitter so we need to check for this condition below.
   //
+  DEBUG ((DEBUG_ERROR, "%a Start.\r\n", __FUNCTION__));
   if (Controller == mImageHandle) {
     Status = EFI_UNSUPPORTED;
     goto Exit;
@@ -1056,6 +1057,7 @@ SWMDriverSupported (
                   EFI_OPEN_PROTOCOL_GET_PROTOCOL
                   );
 
+  DEBUG ((DEBUG_ERROR, "%a OpenProtocol gEfiAbsolutePointerProtocolGuid Status = %r.\r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     goto Exit;
   }
@@ -1281,6 +1283,8 @@ DriverInitStage2 (
   EFI_STATUS  Status = EFI_SUCCESS;
   SWM_RECT    FrameRect;
 
+  DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe GopRegisteredCallback xyz555\n", __FUNCTION__));
+
   // Determine if the Simple Rendering Engine Protocol is available on the same Console Out handle.  The
   // Rendering Engine driver provides both Graphics Output and Rendering Engine protocols.
   //
@@ -1290,6 +1294,8 @@ DriverInitStage2 (
                     NULL,
                     (VOID **)&mRenderingEngine
                     );
+
+  DEBUG ((DEBUG_ERROR, "%a gBS->LocateProtocol gMsSREProtocolGuid Status=%r\n", __FUNCTION__, Status));
 
     if (EFI_ERROR (Status)) {
       DEBUG ((DEBUG_ERROR, "ERROR [SWM]: Failed to find Rendering Engine after finding GOP (%r).\r\n", Status));
@@ -1305,6 +1311,8 @@ DriverInitStage2 (
                   (VOID **)&mFont
                   );
 
+  DEBUG ((DEBUG_ERROR, "%a gBS->LocateProtocol gEfiHiiFontProtocolGuid Status=%r\n", __FUNCTION__, Status));
+
   ASSERT_EFI_ERROR (Status);
   if (EFI_ERROR (Status)) {
     mFont = NULL;
@@ -1314,6 +1322,8 @@ DriverInitStage2 (
   // Register our custom fonts.
   //
   Status = RegisterSwmHiiPackages ();
+
+  DEBUG ((DEBUG_ERROR, "%a RegisterSwmHiiPackages Status=%r\n", __FUNCTION__, Status));
 
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [SWM]: Failed to register custom fonts (%r).\r\n", Status));
@@ -1327,6 +1337,8 @@ DriverInitStage2 (
                   &gEfiSimpleTextInputExProtocolGuid,
                   (VOID **)&mSimpleTextInEx
                   );
+
+  DEBUG ((DEBUG_ERROR, "%a gBS->HandleProtocol gEfiSimpleTextInputExProtocolGuid Status=%r\n", __FUNCTION__, Status));
 
   // ASSERT_EFI_ERROR(Status);
   if (EFI_ERROR (Status)) {
@@ -1376,6 +1388,8 @@ DriverInitStage2 (
              NULL
              );
 
+  DEBUG ((DEBUG_ERROR, "%a SWMRegisterClient Status=%r\n", __FUNCTION__, Status));
+
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [SWM]: Failed to register initial default client: %r.\r\n", Status));
     goto Exit;
@@ -1383,10 +1397,12 @@ DriverInitStage2 (
 
   Status = gBS->InstallMultipleProtocolInterfaces (
                   &ImageHandle,
-                  &gEfiAbsolutePointerProtocolGuid,
+                  &gEfiAbsolutePointerProtocolGuid,  //8D59D32B
                   (VOID *)mSWM.UserAbsolutePointerProtocol,
                   NULL
                   );
+
+  DEBUG ((DEBUG_ERROR, "%a gBS->InstallMultipleProtocolInterfaces gEfiAbsolutePointerProtocolGuid Status=%r\n", __FUNCTION__, Status));
 
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [SWM]: Failed to install the Absolute Pointer protocol interface, Status: %r\r\n", Status));
@@ -1411,6 +1427,8 @@ DriverInitStage2 (
                   NULL
                   );
 
+  DEBUG ((DEBUG_ERROR, "%a Quanta gBS->InstallMultipleProtocolInterfaces:gMsSWMProtocolGuid status:%r\n", __FUNCTION__, Status));
+
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [SWM]: Failed to install the Simple Window Manager protocol interface, Status: %r\r\n", Status));
     goto Exit;
@@ -1425,6 +1443,8 @@ DriverInitStage2 (
                   NULL,
                   &mSWMWatchListTimerEvent
                   );
+
+  DEBUG ((DEBUG_ERROR, "%a gBS->CreateEvent EVT_TIMER Status=%r\n", __FUNCTION__, Status));
 
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [SWM]: Failed to create timer callback event for re-enabling the mouse pointer.  Status = %r\r\n", Status));
@@ -1443,6 +1463,8 @@ DriverInitStage2 (
                   PERIODIC_REFRESH_INTERVAL
                   );
 
+  DEBUG ((DEBUG_ERROR, "%a gBS->SetTimer PERIODIC_REFRESH_INTERVAL Status=%r\n", __FUNCTION__, Status));
+
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [SWM]: Failed to start provider watchlist scanning timer.  Status = %r\r\n", Status));
     goto Exit;
@@ -1452,6 +1474,8 @@ DriverInitStage2 (
   // needs to happen after we've called InstallMultipleProtocolInterfaces.
   //
   Status = InitializeUIToolKit (ImageHandle);
+
+  DEBUG ((DEBUG_ERROR, "%a InitializeUIToolKit Status=%r\n", __FUNCTION__, Status));
 
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [SWM]: Failed to initialize UI toolkit (%r).\r\n", Status));
@@ -1468,6 +1492,8 @@ DriverInitStage2 (
              NULL,
              NULL
              );
+
+  DEBUG ((DEBUG_ERROR, "%a EfiLibInstallDriverBindingComponentName2 Status=%r\n", __FUNCTION__, Status));
 
   ASSERT_EFI_ERROR (Status);
 
@@ -1494,14 +1520,17 @@ GopRegisteredCallback (
 {
   EFI_STATUS  Status = EFI_SUCCESS;
 
+  DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe GopRegisteredCallback 111\n", __FUNCTION__));
   // If we already found the Graphics Output Protocol we want, there's nothing to do.
   //
   if (NULL != mGop) {
+    DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe GopRegisteredCallback 222\n", __FUNCTION__));
     goto Exit;
   }
 
   // Determine if the Graphics Output Protocol is available on the Console Out handle.
   //
+  DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe GopRegisteredCallback 333\n", __FUNCTION__));
   Status = gBS->LocateProtocol (
                   &gEfiGraphicsOutputProtocolGuid,
                   NULL,
@@ -1509,6 +1538,7 @@ GopRegisteredCallback (
                   );
 
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe GopRegisteredCallback 444\n", __FUNCTION__));
     mGop = NULL;
     goto Exit;
   }
@@ -1519,18 +1549,21 @@ GopRegisteredCallback (
   // Determine if the Simple Rendering Engine Protocol is available on the same Console Out handle.  The
   // Rendering Engine driver provides both Graphics Output and Rendering Engine protocols.
   //
+  DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe GopRegisteredCallback 555\n", __FUNCTION__));
   Status = gBS->LocateProtocol (
-                  &gMsSREProtocolGuid,
+                  &gMsSREProtocolGuid, //7768969c
                   NULL,
                   (VOID **)&mRenderingEngine
                   );
 
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe GopRegisteredCallback 666\n", __FUNCTION__));
     goto Exit;
   }
 
   // Now that we found the Graphics Output Protocol, complete the second half of driver initialization.
   //
+  DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe GopRegisteredCallback 777\n", __FUNCTION__));
   Status = DriverInitStage2 (mImageHandle);
 
   // Unfortunately we can't return an error status from this routine or fail driver initialization but we can
@@ -1539,13 +1572,14 @@ GopRegisteredCallback (
   //
   // ASSERT_EFI_ERROR (Status);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe GopRegisteredCallback 888\n", __FUNCTION__));
     DEBUG ((DEBUG_ERROR, "ERROR [SWM]: Failed to complete stage two driver initialization (%r).\r\n", Status));
     DriverCleanUp (mImageHandle);
     goto Exit;
   }
 
 Exit:
-
+  DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe GopRegisteredCallback 999\n", __FUNCTION__));
   return;
 }
 
@@ -1568,10 +1602,13 @@ DriverInit (
 {
   EFI_STATUS  Status = EFI_SUCCESS;
 
+  DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe 111\n", __FUNCTION__));
+
   // Save the image handle for later use.
   //
   mImageHandle = ImageHandle;
 
+  DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe 222\n", __FUNCTION__));
   // Acquire access to the current theme.
   mTheme = MsUiGetPlatformTheme ();
 
@@ -1582,6 +1619,7 @@ DriverInit (
   // in which case we need to register for GOP registration notifications to perform the latter half of our driver
   // initialization.  If we're lucky and GOP is available now, we can do it all here in one pass.
   //
+  DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe 333\n", __FUNCTION__));
   Status = gBS->HandleProtocol (
                   gST->ConsoleOutHandle,
                   &gEfiGraphicsOutputProtocolGuid,
@@ -1591,6 +1629,7 @@ DriverInit (
   if (!EFI_ERROR (Status)) {
     // Graphics Output Protocol is available now, complete driver initialization.
     //
+    DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe 444\n", __FUNCTION__));
     Status = DriverInitStage2 (ImageHandle);
     goto Exit;
   }
@@ -1599,6 +1638,7 @@ DriverInit (
   //
   mGop = NULL;
 
+  DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe 555\n", __FUNCTION__));
   Status = gBS->CreateEvent (
                   EVT_NOTIFY_SIGNAL,
                   TPL_CALLBACK,
@@ -1608,10 +1648,12 @@ DriverInit (
                   );
 
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe 666\n", __FUNCTION__));
     DEBUG ((DEBUG_ERROR, "INFO [SWM]: Failed to create GOP registration event (%r).\r\n", Status));
     goto Exit;
   }
 
+  DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe 777\n", __FUNCTION__));
   Status = gBS->RegisterProtocolNotify (
                   &gEfiGraphicsOutputProtocolGuid,
                   mGopRegisterEvent,
@@ -1619,6 +1661,7 @@ DriverInit (
                   );
 
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a SimpleWindowManagerDxe 888\n", __FUNCTION__));
     DEBUG ((DEBUG_ERROR, "INFO [SWM]: Failed to register for GOP registration notifications (%r).\r\n", Status));
     goto Exit;
   }

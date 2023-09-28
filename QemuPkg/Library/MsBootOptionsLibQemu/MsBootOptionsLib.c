@@ -414,10 +414,15 @@ MsBootOptionsLibRegisterDefaultBootOptions (
   VOID
   )
 {
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   RegisterFvBootOption (&gMsBootPolicyFileGuid, MS_SDD_BOOT, (UINTN)-1, LOAD_OPTION_ACTIVE, (UINT8 *)MS_SDD_BOOT_PARM, sizeof (MS_SDD_BOOT_PARM));
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   RegisterFvBootOption (PcdGetPtr (PcdShellFile), INTERNAL_UEFI_SHELL_NAME, (UINTN)-1, LOAD_OPTION_ACTIVE, NULL, 0);
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   RegisterFvBootOption (&gMsBootPolicyFileGuid, MS_USB_BOOT, (UINTN)-1, LOAD_OPTION_ACTIVE, (UINT8 *)MS_USB_BOOT_PARM, sizeof (MS_USB_BOOT_PARM));
+  DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
   RegisterFvBootOption (&gMsBootPolicyFileGuid, MS_PXE_BOOT, (UINTN)-1, LOAD_OPTION_ACTIVE, (UINT8 *)MS_PXE_BOOT_PARM, sizeof (MS_PXE_BOOT_PARM));
+  DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
   RegisterFvBootOption (PcdGetPtr (PcdUIApplicationFile), INTERNAL_UEFI_FP_NAME, (UINTN)-1, LOAD_OPTION_ACTIVE, NULL, 0);
 }
 

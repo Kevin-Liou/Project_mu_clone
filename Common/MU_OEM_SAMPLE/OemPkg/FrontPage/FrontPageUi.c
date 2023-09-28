@@ -45,6 +45,7 @@
 
 #include <Settings/DfciSettings.h>
 #include <Settings/FrontPageSettings.h>
+#include <Library/TimerLib.h>
 
 extern EFI_HII_HANDLE                  gStringPackHandle;
 extern BOOLEAN                         mResetRequired;

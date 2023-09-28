@@ -62,6 +62,7 @@
   MuSecureBootKeySelectorLib
   SecureBootKeyStoreLib
   SafeIntLib
+  TimerLib
 
 [Guids]
   gEfiGlobalVariableGuid                        ## SOMETIMES_PRODUCES ## Variable:L"BootNext" (The number of next boot option)

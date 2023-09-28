@@ -144,8 +144,10 @@ OSKDriverBindingSupported (
 
   OSK_DEVICE_PATH  OskDevicePath;
 
+  DEBUG ((DEBUG_ERROR, "%a Start. \r\n", __FUNCTION__));
   // Check if the incoming handle is the same handle as what you installed your device path on
   if (Controller != mControllerHandle) {
+    DEBUG ((DEBUG_ERROR, "%a Controller != mControllerHandle. \r\n", __FUNCTION__));
     return EFI_UNSUPPORTED;
   }
 
@@ -160,6 +162,8 @@ OSKDriverBindingSupported (
                   Controller,
                   EFI_OPEN_PROTOCOL_BY_DRIVER
                   );
+
+  DEBUG ((DEBUG_ERROR, "%a gBS->OpenProtocol gEfiDevicePathProtocolGuid Status = %r. \r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     return Status;
   }
@@ -199,6 +203,8 @@ OSKDriverBindingStart (
   EFI_STATUS       Status = EFI_SUCCESS;
   OSK_DEVICE_PATH  OskDevicePath;
 
+
+  DEBUG ((DEBUG_ERROR, "%a INFO [OSK]: DriverBindingStart Start. \r\n", __FUNCTION__));
   // Check if the incoming handle is the same handle as what you installed your device path on
   if (Controller != mControllerHandle) {
     return EFI_UNSUPPORTED;
@@ -212,8 +218,10 @@ OSKDriverBindingStart (
                   Controller,
                   EFI_OPEN_PROTOCOL_BY_DRIVER
                   );
+
+  DEBUG ((DEBUG_ERROR, "%a INFO [OSK]: gBS->OpenProtocol gEfiDevicePathProtocolGuid Status = %r. \r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_INFO, "INFO [OSK]: Device Path already opened (%r).\r\n", Status));
+    DEBUG ((DEBUG_ERROR, "INFO [OSK]: Device Path already opened (%r).\r\n", Status));
     return Status;
   }
 
@@ -225,6 +233,7 @@ OSKDriverBindingStart (
                   (VOID **)&mSWMProtocol
                   );
 
+  DEBUG ((DEBUG_ERROR, "%a INFO [OSK]: gBS->LocateProtocol gMsSWMProtocolGuid Status = %r. \r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     mSWMProtocol = NULL;
     DEBUG ((DEBUG_WARN, "ERROR [OSK]: Failed to find Simple Window Manager protocol (%r).\r\n", Status));
@@ -239,6 +248,7 @@ OSKDriverBindingStart (
                   (VOID **)&mGop
                   );
 
+  DEBUG ((DEBUG_ERROR, "%a INFO [OSK]: gBS->LocateProtocol gEfiGraphicsOutputProtocolGuid Status = %r. \r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     mGop = NULL;
     DEBUG ((DEBUG_ERROR, "ERROR [OSK]: Failed to find GOP protocol (%r).\r\n", Status));
@@ -246,7 +256,9 @@ OSKDriverBindingStart (
   }
 
   // Initialize OSK
+  DEBUG ((DEBUG_ERROR, "%a INFO [OSK]: Initial OSK. \r\n", __FUNCTION__));
   Status = OSKDriverInit ();
+  DEBUG ((DEBUG_ERROR, "%a INFO [OSK]: Initial OSK Status = %r. \r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [OSK]: Init OSK Failed (%r).\r\n", Status));
 

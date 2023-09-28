@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "Setup.h"
+#include <Library/TimerLib.h>
 
 SETUP_DRIVER_PRIVATE_DATA  mPrivateData = {
   SETUP_DRIVER_SIGNATURE,
@@ -498,6 +499,7 @@ SendForm (
   FORM_ENTRY_INFO       *MenuList;
   BOOLEAN               RetVal;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   //
   // If EDKII_FORM_DISPLAY_ENGINE_PROTOCOL not found, return EFI_UNSUPPORTED.
   //
@@ -509,6 +511,7 @@ SendForm (
   //
   // Save globals used by SendForm()
   //
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   SaveBrowserContext ();
 
   gFlagReconnect                    = FALSE;
@@ -519,28 +522,36 @@ SendForm (
   gEmptyString                      = L"";
   gDisplayFormData.ScreenDimensions = (EFI_SCREEN_DESCRIPTOR *)ScreenDimensions;
 
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   for (Index = 0; Index < HandleCount; Index++) {
+    DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
     Selection = AllocateZeroPool (sizeof (UI_MENU_SELECTION));
     // MU_CHANGE [BEGIN] - CodeQL change
     if (Selection == NULL) {
+      DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
       ASSERT (Selection != NULL);
       Status = EFI_OUT_OF_RESOURCES;
       break;
     }
 
     // MU_CHANGE [END] - CodeQL change
+    DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
     Selection->Handle = Handles[Index];
     if (FormSetGuid != NULL) {
+      DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
       CopyMem (&Selection->FormSetGuid, FormSetGuid, sizeof (EFI_GUID));
       Selection->FormId = FormId;
     } else {
+      DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
       CopyMem (&Selection->FormSetGuid, &gEfiHiiPlatformSetupFormsetGuid, sizeof (EFI_GUID));
     }
 
     do {
+      DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
       FormSet = AllocateZeroPool (sizeof (FORM_BROWSER_FORMSET));
       // MU_CHANGE [BEGIN] - CodeQL change
       if (FormSet == NULL) {
+        DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
         ASSERT (FormSet != NULL);
         Status = EFI_OUT_OF_RESOURCES;
         break;
@@ -551,38 +562,49 @@ SendForm (
       // Validate the HiiHandle
       // if validate failed, find the first validate parent HiiHandle.
       //
+      DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
       if (!ValidateHiiHandle (Selection->Handle)) {
+        DEBUG ((DEBUG_ERROR, "%a bbb\n", __FUNCTION__));
         FindNextMenu (Selection, FormSetLevel);
       }
 
       //
       // Initialize internal data structures of FormSet
       //
+      DEBUG ((DEBUG_ERROR, "%a ccc\n", __FUNCTION__));
       Status = InitializeFormSet (Selection->Handle, &Selection->FormSetGuid, FormSet);
       if (EFI_ERROR (Status) || IsListEmpty (&FormSet->FormListHead)) {
+        DEBUG ((DEBUG_ERROR, "%a ddd\n", __FUNCTION__));
         DestroyFormSet (FormSet);
         break;
       }
 
+      DEBUG ((DEBUG_ERROR, "%a eee\n", __FUNCTION__));
       Selection->FormSet  = FormSet;
       mSystemLevelFormSet = FormSet;
 
       //
       // Display this formset
       //
+      DEBUG ((DEBUG_ERROR, "%a fff\n", __FUNCTION__));
       gCurrentSelection = Selection;
 
+      DEBUG ((DEBUG_ERROR, "%a ggg\n", __FUNCTION__));
       Status = SetupBrowser (Selection);
 
+      DEBUG ((DEBUG_ERROR, "%a hhh\n", __FUNCTION__));
       gCurrentSelection   = NULL;
       mSystemLevelFormSet = NULL;
 
       //
       // Check incoming formset whether is same with previous. If yes, that means action is not exiting of formset so do not reconnect controller.
       //
+      DEBUG ((DEBUG_ERROR, "%a iii\n", __FUNCTION__));
       if ((gFlagReconnect || gCallbackReconnect) && !CompareGuid (&FormSet->Guid, &Selection->FormSetGuid)) {
+        DEBUG ((DEBUG_ERROR, "%a jjj\n", __FUNCTION__));
         RetVal = ReconnectController (FormSet->DriverHandle);
         if (!RetVal) {
+          DEBUG ((DEBUG_ERROR, "%a kkk\n", __FUNCTION__));
           PopupErrorMessage (BROWSER_RECONNECT_FAIL, NULL, NULL, NULL);
         }
 
@@ -593,13 +615,18 @@ SendForm (
       //
       // If no data is changed, don't need to save current FormSet into the maintain list.
       //
+      DEBUG ((DEBUG_ERROR, "%a lll\n", __FUNCTION__));
       if (!IsNvUpdateRequiredForFormSet (FormSet)) {
+        DEBUG ((DEBUG_ERROR, "%a mmm\n", __FUNCTION__));
         CleanBrowserStorage (FormSet);
+        DEBUG ((DEBUG_ERROR, "%a nnn\n", __FUNCTION__));
         RemoveEntryList (&FormSet->Link);
+        DEBUG ((DEBUG_ERROR, "%a ooo\n", __FUNCTION__));
         DestroyFormSet (FormSet);
       }
 
       if (EFI_ERROR (Status)) {
+        DEBUG ((DEBUG_ERROR, "%a ppp\n", __FUNCTION__));
         break;
       }
     } while (Selection->Action == UI_ACTION_REFRESH_FORMSET);
@@ -607,27 +634,36 @@ SendForm (
     FreePool (Selection);
   }
 
+  DEBUG ((DEBUG_ERROR, "%a qqq\n", __FUNCTION__));
   if (ActionRequest != NULL) {
+    DEBUG ((DEBUG_ERROR, "%a rrr\n", __FUNCTION__));
     *ActionRequest = EFI_BROWSER_ACTION_REQUEST_NONE;
     if (gResetRequiredFormLevel) {
+      DEBUG ((DEBUG_ERROR, "%a sss\n", __FUNCTION__));
       *ActionRequest = EFI_BROWSER_ACTION_REQUEST_RESET;
     }
   }
 
+  DEBUG ((DEBUG_ERROR, "%a ttt\n", __FUNCTION__));
   mFormDisplay->ExitDisplay ();
 
   //
   // Clear the menu history data.
   //
+  DEBUG ((DEBUG_ERROR, "%a uuu\n", __FUNCTION__));
   while (!IsListEmpty (&mPrivateData.FormBrowserEx2.FormViewHistoryHead)) {
+    DEBUG ((DEBUG_ERROR, "%a vvv\n", __FUNCTION__));
     MenuList = FORM_ENTRY_INFO_FROM_LINK (mPrivateData.FormBrowserEx2.FormViewHistoryHead.ForwardLink);
+    DEBUG ((DEBUG_ERROR, "%a www\n", __FUNCTION__));
     RemoveEntryList (&MenuList->Link);
+    DEBUG ((DEBUG_ERROR, "%a xxx\n", __FUNCTION__));
     FreePool (MenuList);
   }
 
   //
   // Restore globals used by SendForm()
   //
+  DEBUG ((DEBUG_ERROR, "%a yyy\n", __FUNCTION__));
   RestoreBrowserContext ();
 
   return Status;

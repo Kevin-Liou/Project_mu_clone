@@ -49,6 +49,8 @@ GopRegisteredCallback (
   UINTN                         HandleCount = 0;
   EFI_GRAPHICS_OUTPUT_PROTOCOL  *pGop;
 
+  DEBUG ((DEBUG_ERROR, "%a GopRegisteredCallback 111\n", __FUNCTION__));
+
   //
   // Find all the handles on which Graphics Output Protocol is installed (should be exactly one handle).
   //
@@ -59,6 +61,9 @@ GopRegisteredCallback (
                   &HandleCount,
                   &Handles
                   );
+
+  DEBUG ((DEBUG_ERROR, "ERROR [GOP]: Unable to locate one %g handle - code=%r - HandleCount=%d\n", &gEfiGraphicsOutputProtocolGuid, Status, HandleCount));
+
   if (EFI_ERROR (Status) || (HandleCount != 1)) {
     DEBUG ((DEBUG_ERROR, "ERROR [GOP]: Unable to locate one %g handle - code=%r - HandleCount=%d\n", &gEfiGraphicsOutputProtocolGuid, Status, HandleCount));
     goto Exit;
@@ -73,6 +78,8 @@ GopRegisteredCallback (
                   (VOID **)&pGop
                   );
 
+  DEBUG ((DEBUG_ERROR, "ERROR [GOP]: Unable to get %g protocol - code=%r\n", &gEfiGraphicsOutputProtocolGuid, Status));
+
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [GOP]: Unable to get %g protocol - code=%r\n", &gEfiGraphicsOutputProtocolGuid, Status));
     goto Exit;
@@ -81,12 +88,16 @@ GopRegisteredCallback (
   //
   // Uninstall Graphics Output Protocol on this handle.
   //
+  DEBUG ((DEBUG_ERROR, "%a GopRegisteredCallback UninstallMultipleProtocolInterfaces\n", __FUNCTION__));
   Status = gBS->UninstallMultipleProtocolInterfaces (
                   Handles[0],
                   &gEfiGraphicsOutputProtocolGuid,
                   (VOID *)pGop,
                   NULL
                   );
+
+  DEBUG ((DEBUG_ERROR, "ERROR [GOP]: Unable to uninstall %g protocol - code=%r\n", &gEfiGraphicsOutputProtocolGuid, Status));
+
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [GOP]: Unable to uninstall %g protocol - code=%r\n", &gEfiGraphicsOutputProtocolGuid, Status));
     goto Exit;
@@ -95,12 +106,16 @@ GopRegisteredCallback (
   //
   // Now, install Graphics Output Override Protocol on this handle.
   //
+  DEBUG ((DEBUG_ERROR, "%a GopRegisteredCallback InstallProtocolInterface\n", __FUNCTION__));
   Status = gBS->InstallProtocolInterface (
                   &Handles[0],
                   mMsGopOverrideProtocolGuid,
                   EFI_NATIVE_INTERFACE,
                   (VOID *)pGop
                   );
+
+  DEBUG ((DEBUG_ERROR, "ERROR [GOP]: Unable to install %g protocol - code=%r\n", mMsGopOverrideProtocolGuid, Status));
+
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [GOP]: Unable to install %g protocol - code=%r\n", mMsGopOverrideProtocolGuid, Status));
     goto Exit;
@@ -111,6 +126,7 @@ GopRegisteredCallback (
   //
   if (mGopRegisterEvent != NULL) {
     Status = gBS->CloseEvent (mGopRegisterEvent);
+    DEBUG ((DEBUG_ERROR, "ERROR [GOP]: Unable to close GOP Override event - code=%r\n", Status));
     if (EFI_ERROR (Status)) {
       DEBUG ((DEBUG_ERROR, "ERROR [GOP]: Unable to close GOP Override event - code=%r\n", Status));
       goto Exit;
@@ -118,10 +134,12 @@ GopRegisteredCallback (
   }
 
 Exit:
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   if (Handles != NULL) {
     FreePool (Handles);
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   DEBUG ((DEBUG_INFO, "INFO [GOP]: GopRegisteredCallback exit - code=%r\n", Status));
 
   return;
@@ -148,11 +166,16 @@ DriverInit (
   EFI_HANDLE  *Handles;
   UINTN       HandleCount = 0;
 
+  DEBUG ((DEBUG_ERROR, "%a GopOverrideDxe 111\n", __FUNCTION__));
+
   mMsGopOverrideProtocolGuid = PcdGetPtr (PcdMsGopOverrideProtocolGuid);
+
+  DEBUG ((DEBUG_ERROR, "%a GopOverrideDxe mMsGopOverrideProtocolGuid = %g\n", __FUNCTION__,mMsGopOverrideProtocolGuid));
 
   //
   // Find all the handles on which Graphics Output Protocol is installed (should be exactly one handle).
   //
+  DEBUG ((DEBUG_ERROR, "%a GopOverrideDxe 222\n", __FUNCTION__));
   Status = gBS->LocateHandleBuffer (
                   ByProtocol,
                   &gEfiGraphicsOutputProtocolGuid,
@@ -167,6 +190,7 @@ DriverInit (
     //
     // Graphics Output Protocol isn't availble now. Register for Graphics Output Protocol registration notifications.
     //
+    DEBUG ((DEBUG_ERROR, "%a GopOverrideDxe CreateEvent 333\n", __FUNCTION__));
     Status = gBS->CreateEvent (
                     EVT_NOTIFY_SIGNAL,
                     TPL_NOTIFY,
@@ -180,6 +204,7 @@ DriverInit (
       goto Exit;
     }
 
+    DEBUG ((DEBUG_ERROR, "%a GopOverrideDxe 444\n", __FUNCTION__));
     Status = gBS->RegisterProtocolNotify (
                     &gEfiGraphicsOutputProtocolGuid,
                     mGopRegisterEvent,

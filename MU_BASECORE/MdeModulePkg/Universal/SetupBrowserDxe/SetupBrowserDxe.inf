@@ -50,6 +50,7 @@
   DevicePathLib
   PcdLib
   UefiLib
+  TimerLib
 
 [Guids]
   gEfiHiiPlatformSetupFormsetGuid               ## SOMETIMES_CONSUMES  ## GUID

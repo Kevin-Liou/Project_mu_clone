@@ -137,6 +137,7 @@ ExtractConfig (
 {
   //
   // First, let's sanitize the input...
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   if ((Progress == NULL) || (Results == NULL)) {
     ASSERT (Progress != NULL);
     ASSERT (Results != NULL);
@@ -145,8 +146,10 @@ ExtractConfig (
 
   //
   // Let's just ignore NULL requests.
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   if (Request == NULL) {
     ASSERT (Request != NULL);
+    DEBUG ((DEBUG_ERROR, "%a ASSERT (Request != NULL);\n", __FUNCTION__));
     // NOTE: In theory, we might create a new, complete request here.
     // But NAH!
     return EFI_NOT_FOUND;
@@ -155,7 +158,7 @@ ExtractConfig (
   //
   // Initialize the local variables.
   DEBUG ((
-    DEBUG_VERBOSE,
+    DEBUG_ERROR,
     "[%a:%a] - Request=\n\t%s\n",
     gEfiCallerBaseName,
     __FUNCTION__,
@@ -166,11 +169,13 @@ ExtractConfig (
   if (HiiIsConfigHdrMatch (Request, &gMuFrontPageConfigFormSetGuid, L"FrontPageUiControls")) {
     GetFrontPageUiControls (Request, Progress, Results);
   } else {
+    DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
     return EFI_UNSUPPORTED;
   }
 
   // SetupBrowser considers an error from ExtractConfig to be a fatal error.  Just ignore
   // errors up to the SetupBrowser.
+  DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
   return EFI_SUCCESS;
 }
 

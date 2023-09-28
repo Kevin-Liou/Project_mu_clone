@@ -60,6 +60,7 @@
 #include <MsDisplayEngine.h>
 #include <UIToolKit/SimpleUIToolKit.h>
 #include <time.h>
+#include <Library/TimerLib.h>
 
 #define FP_OSK_WIDTH_PERCENT  75            // On-screen keyboard is 75% the width of the screen.
 
@@ -126,8 +127,10 @@ struct {
   { 2, UNUSED_INDEX, STRING_TOKEN (STR_MF_MENU_OP_BOOTORDER), MS_BOOT_MENU_FORMSET_GUID,      MS_BOOT_ORDER_FORM_ID       },                           // Boot Order
   { 3, 1,            STRING_TOKEN (STR_MF_MENU_OP_DFCI),      DFCI_MENU_FORMSET_GUID,         DFCI_MENU_FORM_ID           },                           // DFCI
   { 4, UNUSED_INDEX, STRING_TOKEN (STR_MF_MENU_OP_HWH),       HWH_MENU_FORMSET_GUID,          HWH_MENU_FORM_ID            },                           // HWH
-  { 5, 2,            STRING_TOKEN (STR_MF_MENU_OP_EXIT),      FRONT_PAGE_CONFIG_FORMSET_GUID, FRONT_PAGE_FORM_ID_EXIT     }                            // Exit
+  { 5, 2,            STRING_TOKEN (STR_MF_MENU_OP_EXIT),      FRONT_PAGE_CONFIG_FORMSET_GUID, FRONT_PAGE_FORM_ID_EXIT     },                           // Exit
+  { 6, UNUSED_INDEX, STRING_TOKEN (STR_MF_MENU_OP_TEST),      FRONT_PAGE_CONFIG_FORMSET_GUID, FRONT_PAGE_FORM_ID_TEST     }                            // TEST
 };
+
 
 // Frontpage form set GUID
 //
@@ -547,23 +550,31 @@ InitializeFrontPage (
   EFI_STATUS      Status = EFI_SUCCESS;
   EFI_HII_HANDLE  HiiHandle;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
+
   if (InitializeHiiData) {
     mCallbackKey = 0;
 
     //
     // Locate Hii relative protocols
     //
+    DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
     Status = gBS->LocateProtocol (&gEfiFormBrowser2ProtocolGuid, NULL, (VOID **)&mFormBrowser2);
+    DEBUG ((DEBUG_ERROR, "%a gBS->LocateProtocol gEfiFormBrowser2ProtocolGuid status:%r\n", __FUNCTION__, Status));
     if (EFI_ERROR (Status)) {
       return Status;
     }
 
+    DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
     Status = gBS->LocateProtocol (&gEfiHiiConfigRoutingProtocolGuid, NULL, (VOID **)&mHiiConfigRouting);
+    DEBUG ((DEBUG_ERROR, "%a gBS->LocateProtocol gEfiHiiConfigRoutingProtocolGuid status:%r\n", __FUNCTION__, Status));
     if (EFI_ERROR (Status)) {
       return Status;
     }
 
+    DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
     Status = gBS->LocateProtocol (&gEdkiiVariablePolicyProtocolGuid, NULL, (VOID **)&mVariablePolicyProtocol);
+    DEBUG ((DEBUG_ERROR, "%a gBS->LocateProtocol gEdkiiVariablePolicyProtocolGuid status:%r\n", __FUNCTION__, Status));
     if (EFI_ERROR (Status)) {
       return Status;
     }
@@ -571,40 +582,49 @@ InitializeFrontPage (
     //
     // Install Device Path Protocol and Config Access protocol to driver handle
     //
+    DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
     Status = gBS->InstallMultipleProtocolInterfaces (
                     &mFrontPagePrivate.DriverHandle,
-                    &gEfiDevicePathProtocolGuid,
+                    &gEfiDevicePathProtocolGuid, //09576E91
                     &mFrontPageHiiVendorDevicePath,
-                    &gEfiHiiConfigAccessProtocolGuid,
+                    &gEfiHiiConfigAccessProtocolGuid, //330d4706
                     &mFrontPagePrivate.ConfigAccess,
                     NULL
                     );
+    DEBUG ((DEBUG_ERROR, "%a gBS->InstallMultipleProtocolInterfaces status:%r\n", __FUNCTION__, Status));
 
     ASSERT_EFI_ERROR (Status);
 
     //
     // Publish our HII data
     //
+    DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
     mFrontPagePrivate.HiiHandle = HiiAddPackages (
-                                    &gMuFrontPageConfigFormSetGuid,
+                                    &gMuFrontPageConfigFormSetGuid, //7f98efe9
                                     mFrontPagePrivate.DriverHandle,
                                     FrontPageVfrBin,
                                     FrontPageStrings,
                                     NULL
                                     );
     if (mFrontPagePrivate.HiiHandle == NULL) {
+      DEBUG ((DEBUG_ERROR, "%a mFrontPagePrivate.HiiHandle:EFI_OUT_OF_RESOURCES\n", __FUNCTION__));
       return EFI_OUT_OF_RESOURCES;
     }
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
   HiiHandle = mFrontPagePrivate.HiiHandle;
 
   // Update PC information display strings from EFI variables.
   //
+  DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
   UpdateDisplayStrings (HiiHandle);
+  DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
   UpdateFormWithFirmwareVersions (HiiHandle);
+  DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
   UpdateSecureBootStatusStrings (FALSE);
 
+  DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
   return Status;
 }
 
@@ -688,27 +708,35 @@ CallFrontPage (
   EFI_HII_HANDLE  Handles[MAX_FORMSET_HANDLES];
   UINTN           HandleCount;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   // Locate Boot Menu form - this should already be registered.
   //
   EFI_GUID        BootMenu    = MS_BOOT_MENU_FORMSET_GUID;
+  DEBUG ((DEBUG_ERROR, "%a aaa111\n", __FUNCTION__));
   EFI_HII_HANDLE  *BootHandle = HiiGetHiiHandles (&BootMenu);
+  DEBUG ((DEBUG_ERROR, "%a aaa222\n", __FUNCTION__));
   EFI_HII_HANDLE  *DfciHandle = HiiGetHiiHandles (&gDfciMenuFormsetGuid);
-  EFI_HII_HANDLE  *HwhHandle  =  HiiGetHiiHandles (&gHwhMenuFormsetGuid);
+  DEBUG ((DEBUG_ERROR, "%a aaa333\n", __FUNCTION__));
+  EFI_HII_HANDLE  *HwhHandle  = HiiGetHiiHandles (&gHwhMenuFormsetGuid);
 
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   Handles[0]  = mFrontPagePrivate.HiiHandle;
   HandleCount = 1;
 
   if (BootHandle != NULL) {
+    DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
     Handles[HandleCount++] = BootHandle[0];
     FreePool (BootHandle);
   }
 
   if (DfciHandle != NULL) {
+    DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
     Handles[HandleCount++] = DfciHandle[0];
     FreePool (DfciHandle);
   }
 
   if (HwhHandle != NULL) {
+    DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
     Handles[HandleCount++] = HwhHandle[0];
     FreePool (HwhHandle);
   }
@@ -716,27 +744,36 @@ CallFrontPage (
   DEBUG ((DEBUG_INFO, "MAX_FORMSET_HANDLES=%d, CurrentFormsetHandles=%d\n", MAX_FORMSET_HANDLES, HandleCount));
   ASSERT (HandleCount < MAX_FORMSET_HANDLES);
 
+  DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
   ActionRequest = EFI_BROWSER_ACTION_REQUEST_NONE;
 
   // Search through the form mapping table to find the form set GUID and ID corresponding to the selected index.
   //
+  DEBUG ((DEBUG_ERROR, "%a aaa666 mShowFullMenu=%d\n", __FUNCTION__, mShowFullMenu));
   for (Count = 0; Count < (sizeof (mFormMap) / sizeof (mFormMap[0])); Count++) {
     Index = ((FALSE == mShowFullMenu) ? mFormMap[Count].LimitedMenuIndex : mFormMap[Count].FullMenuIndex);
-
+    DEBUG ((DEBUG_ERROR, "Index = %d, FormIndex = %d\n", Index, FormIndex));
     if (Index == FormIndex) {
+      DEBUG ((DEBUG_ERROR, "Match found, breaking loop\n"));
       break;
     }
   }
 
+  DEBUG ((DEBUG_ERROR, "%a Count=%d\n", __FUNCTION__, Count));
+  DEBUG ((DEBUG_ERROR, "%a mFormMap.FormSetGUID=%g\n", __FUNCTION__, &mFormMap[Count].FormSetGUID));
+  DEBUG ((DEBUG_ERROR, "%a mFormMap.FormId=%x\n", __FUNCTION__, mFormMap[Count].FormId));
+
   // If we didn't find it, exit with an error.
   //
   if (Index != FormIndex) {
+    DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
     Status = EFI_NOT_FOUND;
     goto Exit;
   }
 
   // Call the browser to display the selected form.
   //
+  DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
   Status = mFormBrowser2->SendForm (
                             mFormBrowser2,
                             Handles,
@@ -747,20 +784,27 @@ CallFrontPage (
                             &ActionRequest
                             );
 
+  DEBUG ((DEBUG_ERROR, "%a mFormBrowser2->SendForm status:%r\n", __FUNCTION__, Status));
+
   // If the user selected the "Restart now" button to exit the Frontpage, set the exit flag.
   //
+  DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
   if (ActionRequest == EFI_BROWSER_ACTION_REQUEST_EXIT) {
+    DEBUG ((DEBUG_ERROR, "%a aaa999\n", __FUNCTION__));
     mTerminateFrontPage = TRUE;
   }
 
   // Check whether user change any option setting which needs a reset to be effective
   //
+  DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
   if (ActionRequest == EFI_BROWSER_ACTION_REQUEST_RESET) {
+    DEBUG ((DEBUG_ERROR, "%a aaa000\n", __FUNCTION__));
     mResetRequired = TRUE;
   }
 
 Exit:
 
+  DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
   return Status;
 }
 
@@ -783,8 +827,10 @@ IsDfciEnabledForDisplay (
   BOOLEAN     DfciEnabled = FALSE;
 
   if (FeaturePcdGet (PcdDfciEnabled)) {
+    DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
     Status      = gBS->LocateProtocol (&gDfciMenuFormsetGuid, NULL, (VOID **)&dummy);
     DfciEnabled = !EFI_ERROR (Status);
+    DEBUG ((DEBUG_ERROR, "%a DfciEnabled=%d\n", __FUNCTION__, DfciEnabled));
   }
 
   return DfciEnabled;
@@ -906,6 +952,8 @@ CreateTopMenu (
     }
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 111 mShowFullMenu=%d\n", __FUNCTION__, mShowFullMenu));
+
   if (!mShowFullMenu) {
     PcdSetBoolS (PcdSetupUiReducedFunction, TRUE);
   }
@@ -915,12 +963,14 @@ CreateTopMenu (
   // then only a limited menu is available.
   //
   //
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   UINT16           Count, Index;
   UINT16           MenuOptionCount = (sizeof (mFormMap) / sizeof (mFormMap[0]));
   UIT_LB_CELLDATA  *MenuOptions    = AllocateZeroPool ((MenuOptionCount + 1) * sizeof (UIT_LB_CELLDATA));  // NOTE: the list relies on a zero-initialized list terminator (hence +1).
 
   ASSERT (NULL != MenuOptions);
   if (NULL == MenuOptions) {
+    DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
     return NULL;
   }
 
@@ -928,14 +978,19 @@ CreateTopMenu (
   // If Dfci is Enabled, always display the DfciMenu.
   // If Dfci is Disabled, only display the Dfci menu if Dfci Enrolled
   //
+  DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
   if (!IsDfciEnabledForDisplay ()) {
+    DEBUG ((DEBUG_ERROR, "%a aaa444\n", __FUNCTION__));
     RemoveMenuFromList (STRING_TOKEN (STR_MF_MENU_OP_DFCI));
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
   if (!IsHwhEnabledForDisplay ()) {
+    DEBUG ((DEBUG_ERROR, "%a aaa555\n", __FUNCTION__));
     RemoveMenuFromList (STRING_TOKEN (STR_MF_MENU_OP_HWH));
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 666 mShowFullMenu=%d\n", __FUNCTION__, mShowFullMenu));
   for (Count = 0; Count < MenuOptionCount; Count++) {
     Index = ((FALSE == mShowFullMenu) ? mFormMap[Count].LimitedMenuIndex : mFormMap[Count].FullMenuIndex);
 
@@ -948,10 +1003,12 @@ CreateTopMenu (
 
   // Create the ListBox that encapsulates the top-level menu.
   //
+  DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
   FontInfo.FontSize  = FP_MFRAME_MENU_TEXT_FONT_HEIGHT;
   FontInfo.FontStyle = EFI_HII_FONT_STYLE_NORMAL;
   Flags |= UIT_LISTBOX_FLAGS_TOP_MENU;
 
+  DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
   ListBox  *TopMenu = new_ListBox (
                         OrigX,
                         OrigY,
@@ -971,9 +1028,11 @@ CreateTopMenu (
   // Free HII string buffer.
   //
   if (NULL != MenuOptions) {
+    DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
     FreePool (MenuOptions);
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
   return TopMenu;
 }
 
@@ -1407,13 +1466,14 @@ InitializeFrontPageUI (
 
   // Establish initial FrontPage TitleBar and Master Frame dimensions based on the current screen size.
   //
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   mTitleBarWidth     = mBootHorizontalResolution;
   mTitleBarHeight    = ((mBootVerticalResolution   * FP_TBAR_HEIGHT_PERCENT)  / 100);
   mMasterFrameWidth  = ((mBootHorizontalResolution * FP_MFRAME_WIDTH_PERCENT) / 100);
   mMasterFrameHeight = (mBootVerticalResolution - mTitleBarHeight);
 
   DEBUG ((
-    DEBUG_INFO,
+    DEBUG_ERROR,
     "INFO [FP]: FP Dimensions: %d, %d, %d, %d, %d, %d\r\n", \
     mBootHorizontalResolution, //1024
     mBootVerticalResolution,  //768
@@ -1433,10 +1493,12 @@ InitializeFrontPageUI (
   // NOTE: This should come before CreateTopMenu() because it needs to happen before the
   //       Admin Password prompt.
   //
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   NotifyUserOfAlerts ();
 
   // Create the top-level menu in the Master Frame.
   //
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   mTopMenu = CreateTopMenu (
                MasterFrameMenuOrigX, // 0
                MasterFrameMenuOrigY, // 61
@@ -1447,25 +1509,32 @@ InitializeFrontPageUI (
 
   ASSERT (NULL != mTopMenu);
   if (NULL == mTopMenu) {
+    DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
     Status = EFI_OUT_OF_RESOURCES;
     goto Exit;
   }
 
   // Render the TitleBar at the top of the screen.
   //
+  DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
   RenderTitlebar ();
 
   // Render the Battery Image at the TitleBar.
   //
-  DrawBatteryImageWithTitleBar (BatteryPercentage);
+  DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
+  // DrawBatteryImageWithTitleBar (BatteryPercentage);  // Quanta remove battery icon
+  DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
+  // RenderBatteryIcon(768, 5, 50, 50, 25);             // Quanta remove battery icon
 
   // Render the Master Frame and its Top-Level menu contents.
   //
+  DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
   RenderMasterFrame ();
 
   // Create the Master Frame notification event.  This event is signalled by the display engine to note that
   // there is a user input event outside the form area to consider.
   //
+  DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
   Status = gBS->CreateEventEx (
                   EVT_NOTIFY_SIGNAL,
                   TPL_CALLBACK,
@@ -1475,6 +1544,7 @@ InitializeFrontPageUI (
                   &mMasterFrameNotifyEvent
                   );
 
+  DEBUG ((DEBUG_ERROR, "ERROR [FP]: Failed to create master frame notification event.  Status = %r\r\n", Status));
   if (EFI_SUCCESS != Status) {
     DEBUG ((DEBUG_ERROR, "ERROR [FP]: Failed to create master frame notification event.  Status = %r\r\n", Status));
     goto Exit;
@@ -1482,10 +1552,12 @@ InitializeFrontPageUI (
 
   // Set shared pointer to user input context structure in a PCD so it can be shared.
   //
+  DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
   PcdSet64S (PcdCurrentPointerState, (UINT64)(UINTN)&mDisplayEngineState);
 
 Exit:
 
+  DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
   return Status;
 }
 
@@ -1569,7 +1641,7 @@ UefiMain (
 {
   EFI_STATUS  Status  = EFI_SUCCESS;
   UINT32      OSKMode = 0;
-  EFI_EVENT   TimerEvent;
+  // EFI_EVENT   TimerEvent;
 
   // Delete BootNext if entry to BootManager.
   Status = gRT->SetVariable (
@@ -1579,6 +1651,8 @@ UefiMain (
                   0,
                   NULL
                   );
+
+  DEBUG ((DEBUG_ERROR, "%a Delete BootNext if entry to BootManager. status:%r\n", __FUNCTION__, Status));
 
   // Save image handle for later.
   //
@@ -1595,12 +1669,15 @@ UefiMain (
                   NULL,
                   (VOID **)&mSettingAccess
                   );
+  DEBUG ((DEBUG_ERROR, "%a gBS->LocateProtocol gDfciSettingAccessProtocolGuid status:%r\n", __FUNCTION__, Status));
+
   if (EFI_ERROR (Status)) {
     ASSERT_EFI_ERROR (Status);
     DEBUG ((DEBUG_ERROR, "%a Couldn't locate system setting access protocol\n", __FUNCTION__));
   }
 
   Status = GetPlatformKeyStore (&mSecureBootKeys, &mSecureBootKeysCount);
+  DEBUG ((DEBUG_ERROR, "%a GetPlatformKeyStore status:%r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     ASSERT_EFI_ERROR (Status);
     DEBUG ((DEBUG_ERROR, "%a Couldn't fetch platform key store %r!\n", __FUNCTION__, Status));
@@ -1608,22 +1685,26 @@ UefiMain (
 
   // Force-connect all controllers.
   //
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   EfiBootManagerConnectAll ();
 
   // Set console mode: *not* VGA, no splashscreen logo.
   // Insure Gop is in Big Display mode prior to accessing GOP.
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   SetGraphicsConsoleMode (GCM_NATIVE_RES);
 
   //
   // After the console is ready, get current video resolution
   // and text mode before launching setup at first time.
   //
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   Status = gBS->LocateProtocol (
                   &gEfiGraphicsOutputProtocolGuid,
                   NULL,
                   (VOID **)&mGop
                   );
 
+  DEBUG ((DEBUG_ERROR, "%a gBS->LocateProtocol gEfiGraphicsOutputProtocolGuid status:%r!\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     mGop = (EFI_GRAPHICS_OUTPUT_PROTOCOL *)NULL;
     goto Exit;
@@ -1631,14 +1712,17 @@ UefiMain (
 
   // Determine if the Font Protocol is available
   //
+  DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
   Status = gBS->LocateProtocol (
                   &gEfiHiiFontProtocolGuid,
                   NULL,
                   (VOID **)&mFont
                   );
 
+  DEBUG ((DEBUG_ERROR, "%a gBS->LocateProtocol gEfiHiiFontProtocolGuid status:%r!\n", __FUNCTION__, Status));
   ASSERT_EFI_ERROR (Status);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a aaa444\n", __FUNCTION__));
     mFont  = (EFI_HII_FONT_PROTOCOL *)NULL;
     Status = EFI_UNSUPPORTED;
     DEBUG ((DEBUG_ERROR, "ERROR [FP]: Failed to find Font protocol (%r).\r\n", Status));
@@ -1647,13 +1731,16 @@ UefiMain (
 
   // Locate the Simple Window Manager protocol.
   //
+  DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
   Status = gBS->LocateProtocol (
-                  &gMsSWMProtocolGuid,
+                  &gMsSWMProtocolGuid, //9d400d20
                   NULL,
                   (VOID **)&mSWMProtocol
                   );
 
+  DEBUG ((DEBUG_ERROR, "%a gBS->LocateProtocol gMsSWMProtocolGuid status:%r!\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a aaa555\n", __FUNCTION__));
     mSWMProtocol = NULL;
     Status       = EFI_UNSUPPORTED;
     DEBUG ((DEBUG_ERROR, "ERROR [FP]: Failed to find the window manager protocol (%r).\r\n", Status));
@@ -1662,13 +1749,16 @@ UefiMain (
 
   // Locate the on-screen keyboard (OSK) protocol.
   //
+  DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
   Status = gBS->LocateProtocol (
                   &gMsOSKProtocolGuid,
                   NULL,
                   (VOID **)&mOSKProtocol
                   );
 
+  DEBUG ((DEBUG_ERROR, "%a gBS->LocateProtocol gMsOSKProtocolGuid status:%r!\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a aaa666\n", __FUNCTION__));
     Status       = EFI_UNSUPPORTED;
     mOSKProtocol = (MS_ONSCREEN_KEYBOARD_PROTOCOL *)NULL;
     DEBUG ((DEBUG_ERROR, "ERROR [FP]: Failed to find the on-screen keyboard protocol (%r).\r\n", Status));
@@ -1681,6 +1771,7 @@ UefiMain (
 
   // Disable OSK icon auto-activation and self-refresh, and ensure keyboard is disabled.
   //
+  DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
   mOSKProtocol->GetKeyboardMode (mOSKProtocol, &OSKMode);
   OSKMode &= ~(OSK_MODE_AUTOENABLEICON | OSK_MODE_SELF_REFRESH);
   mOSKProtocol->ShowKeyboard (mOSKProtocol, FALSE);
@@ -1696,8 +1787,11 @@ UefiMain (
     //
     // Get current video resolution and text mode.
     //
+    DEBUG ((DEBUG_ERROR, "%a aaa777\n", __FUNCTION__));
     mBootHorizontalResolution = mGop->Mode->Info->HorizontalResolution;
+    DEBUG ((DEBUG_ERROR, "%a mBootHorizontalResolution = %d\n", __FUNCTION__, mBootHorizontalResolution));
     mBootVerticalResolution   = mGop->Mode->Info->VerticalResolution;
+    DEBUG ((DEBUG_ERROR, "%a mBootVerticalResolution = %d\n", __FUNCTION__, mBootVerticalResolution));
   }
 
   // Ensure screen is clear when switch Console from Graphics mode to Text mode
@@ -1709,6 +1803,7 @@ UefiMain (
   //
   Status = InitializeUIToolKit (ImageHandle);
 
+  DEBUG ((DEBUG_ERROR, "%a InitializeUIToolKit (ImageHandle); status:%r!\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "ERROR [FP]: Failed to initialize the UI toolkit (%r).\r\n", Status));
     goto Exit;
@@ -1716,29 +1811,33 @@ UefiMain (
 
   // Register Front Page strings with the HII database.
   //
+  DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
   InitializeStringSupport ();
 
   // Initialize HII data (ex: register strings, etc.).
   //
+  DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
   InitializeFrontPage (TRUE);
 
   // Initialize the FrontPage User Interface.
   //
+  DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
   Status = InitializeFrontPageUI ();
 
-  // Create a timer event and register the callback function.
-  Status = gBS->CreateEvent (
-                  EVT_TIMER | EVT_NOTIFY_SIGNAL,
-                  TPL_CALLBACK,
-                  UpdateBatteryImageCallback,
-                  NULL,
-                  &TimerEvent
-                  );
-  if (!EFI_ERROR (Status)) {
-    // Set the timer to trigger the callback every 1 second.
-    Status = gBS->SetTimer (TimerEvent, TimerPeriodic, 10000000);
-  }
-
+  DEBUG ((DEBUG_ERROR, "%a InitializeFrontPageUI (); status:%r!\n", __FUNCTION__, Status));
+  DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
+  // // Create a timer event and register the callback function.
+  // Status = gBS->CreateEvent (
+  //                 EVT_TIMER | EVT_NOTIFY_SIGNAL,
+  //                 TPL_CALLBACK,
+  //                 UpdateBatteryImageCallback,
+  //                 NULL,
+  //                 &TimerEvent
+  //                 );
+  // if (!EFI_ERROR (Status)) {
+  //   // Set the timer to trigger the callback every 1 second.
+  //   Status = gBS->SetTimer (TimerEvent, TimerPeriodic, 10000000);
+  // }
   if (EFI_SUCCESS != Status) {
     DEBUG ((DEBUG_ERROR, "ERROR [FP]: Failed to initialize the FrontPage user interface.  Status = %r\r\n", Status));
     goto Exit;
@@ -1751,26 +1850,30 @@ UefiMain (
 
   // Display the specified FrontPage form.
   //
+  DEBUG ((DEBUG_ERROR, "%a bbb\n", __FUNCTION__));
   do {
     // By default, we'll terminate FrontPage after processing the next Form unless the flag is reset.
     //
     mTerminateFrontPage = TRUE;
-
+    DEBUG ((DEBUG_ERROR, "%a ccc\n", __FUNCTION__));
     CallFrontPage (mCurrentFormIndex);
   } while (FALSE == mTerminateFrontPage);
 
   if (mResetRequired) {
+    DEBUG ((DEBUG_ERROR, "%a ddd\n", __FUNCTION__));
     ResetSystemWithSubtype (EfiResetCold, &gFrontPageResetGuid);
   }
 
+  DEBUG ((DEBUG_ERROR, "%a eee\n", __FUNCTION__));
   ProcessBootNext ();
 
   // Clean-up
   //
+  DEBUG ((DEBUG_ERROR, "%a fff\n", __FUNCTION__));
   UninitializeFrontPage ();
 
   // Close the timer
-  gBS->CloseEvent (TimerEvent);
+  //gBS->CloseEvent (TimerEvent);
 
 Exit:
 

@@ -105,11 +105,14 @@ HasWritePermissions (
   BOOLEAN                   MemberOfGroup;
   VOID                      *Key;
 
+  DEBUG ((DEBUG_INFO, "%a - %a\n", __FUNCTION__, SettingId));
   if ((AuthToken == NULL) || (Result == NULL) || (SettingId == NULL)) {
+    DEBUG ((DEBUG_ERROR, "%a - Bad Parameter\n", __FUNCTION__));
     return EFI_INVALID_PARAMETER;
   }
 
   if (!mPermStore) {
+    DEBUG ((DEBUG_ERROR, "%a - Perm Store not initialized\n", __FUNCTION__));
     return EFI_NOT_READY;
   }
 
@@ -119,6 +122,7 @@ HasWritePermissions (
   }
 
   // 1. Get Identity from Auth Token
+  DEBUG ((DEBUG_INFO, "%a - Get Identity from Auth Token\n", __FUNCTION__));
   Status = mAuthenticationProtocol->GetIdentityProperties (mAuthenticationProtocol, AuthToken, &Properties);
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a - Failed to get properties for auth token %r\n", __FUNCTION__, Status));
@@ -131,6 +135,7 @@ HasWritePermissions (
   //  are used.  If any explicit permission is denied, write permission is false.  If all of the
   //  explicit permission allow access, then write permission is granted.
   //
+  DEBUG ((DEBUG_INFO, "%a - Check if Setting is a member of a group\n", __FUNCTION__));
   MemberOfGroup = FALSE;
   Key           = NULL;
   GroupId       = FindGroupIdBySetting (SettingId, &Key);
@@ -151,6 +156,7 @@ HasWritePermissions (
     }
 
     // A setting may be a member of multiple groups. Get the next group
+    DEBUG ((DEBUG_INFO, "%a - Check if Setting is a member of another group\n", __FUNCTION__));
     GroupId = FindGroupIdBySetting (SettingId, &Key);
   }
 
@@ -158,15 +164,19 @@ HasWritePermissions (
   // If the setting is a member of a group with explicit permissions, and was not denied by
   // any of the Group explicit permissions, allow access.
   //
+  DEBUG ((DEBUG_INFO, "%a - Check if Setting is a member of a group with explicit permissions\n", __FUNCTION__));
   if (MemberOfGroup) {
+    DEBUG ((DEBUG_INFO, "%a - Setting is a member of a group with explicit permissions\n", __FUNCTION__));
     *Result = TRUE;
     return EFI_SUCCESS;
   }
 
   // 3. Get the default permission.
+  DEBUG ((DEBUG_INFO, "%a - Get the default permission\n", __FUNCTION__));
   PMask = mPermStore->DefaultPMask;
 
   // 4. Set PMask to specific value if in list
+  DEBUG ((DEBUG_INFO, "%a - Set PMask to specific value if in list\n", __FUNCTION__));
   Temp = FindPermissionEntry (mPermStore, SettingId);
   if (Temp != NULL) {
     DEBUG ((DEBUG_INFO, "%a - Found Specific Permission for %a (0x%x), (0x%x)\n", __FUNCTION__, SettingId, Temp->PMask, Properties.Identity));
@@ -176,6 +186,7 @@ HasWritePermissions (
   }
 
   // 5. Permission and Identity use the same bits so they can be logically and-ed together
+  DEBUG ((DEBUG_INFO, "%a - Permission and Identity use the same bits so they can be logically and-ed together\n", __FUNCTION__));
   *Result = (PMask & Properties.Identity) ? TRUE : FALSE;
   return EFI_SUCCESS;
 }
@@ -370,8 +381,10 @@ CheckForAuthenticationProtocol (
   EFI_STATUS          Status;
   DFCI_IDENTITY_MASK  IdMask;           // Identities installed
 
+  DEBUG ((DEBUG_INFO, "%a: Enter\n", __FUNCTION__));
   if (mAuthenticationProtocol == NULL) {
     Status = gBS->LocateProtocol (&gDfciAuthenticationProtocolGuid, NULL, (VOID **)&mAuthenticationProtocol);
+    DEBUG ((DEBUG_INFO, "Located Authentication Protocol. Code=%r\n", Status));
     if (EFI_ERROR (Status)) {
       // this happens at least once
       // on register
@@ -432,6 +445,7 @@ DfciPermissionInit (
   EFI_STATUS  Status;
   VOID        *InitRegistration;
 
+  DEBUG ((DEBUG_INFO, "%a - Enter\n", __FUNCTION__));
   EfiCreateProtocolNotifyEvent (
     &gDfciAuthenticationProtocolGuid,
     TPL_CALLBACK,
@@ -443,10 +457,11 @@ DfciPermissionInit (
   // Install Permission Apply Protocol
   Status = gBS->InstallMultipleProtocolInterfaces (
                   &ImageHandle,
-                  &gDfciApplyPermissionsProtocolGuid,
+                  &gDfciApplyPermissionsProtocolGuid, //D701B10F
                   &mApplyPermissionsProtocol,
                   NULL
                   );
+  DEBUG ((DEBUG_INFO, "%a - Install Apply Permissions Protocol. Code=%r\n", __FUNCTION__, Status));
 
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "Failed to Install DFCI Permissions Protocol. %r\n", Status));

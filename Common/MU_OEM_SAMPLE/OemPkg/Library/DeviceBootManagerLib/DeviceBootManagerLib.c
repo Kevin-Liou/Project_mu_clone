@@ -740,6 +740,8 @@ DeviceBootManagerBdsEntry (
   VOID
   )
 {
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
+
   EfiEventGroupSignal (&gMsStartOfBdsNotifyGuid);
 
   //
@@ -768,9 +770,12 @@ DeviceBootManagerBeforeConsole (
   BDS_CONSOLE_CONNECT_ENTRY  **PlatformConsoles
   )
 {
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   MsBootOptionsLibRegisterDefaultBootOptions ();
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   *PlatformConsoles = GetPlatformConsoleList ();
 
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   return GetPlatformPreferredConsole (DevicePath);
 }
 

@@ -139,19 +139,24 @@ GetRebootReason (
 {
   EFI_STATUS  Status;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   if ((BufferSize == NULL) ||
       ((*BufferSize != 0) && (Buffer == NULL)))
   {
+    DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
     Status = EFI_INVALID_PARAMETER;
     goto Done;
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   if (*BufferSize < MSP_REBOOT_REASON_LENGTH) {
+    DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
     *BufferSize = MSP_REBOOT_REASON_LENGTH;
     Status      = EFI_BUFFER_TOO_SMALL;
     goto Done;
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 555 MSP_REBOOT_REASON_LENGTH=%d\n", __FUNCTION__, MSP_REBOOT_REASON_LENGTH));
   *BufferSize = MSP_REBOOT_REASON_LENGTH;
   Status      = gRT->GetVariable (
                        MSP_REBOOT_REASON_VAR_NAME,
@@ -160,6 +165,7 @@ GetRebootReason (
                        BufferSize,
                        Buffer
                        );
+  DEBUG ((DEBUG_ERROR, "%a gRT->GetVariable MSP_REBOOT_REASON_VAR_NAME status:%r\n", __FUNCTION__, Status));
 
 Done:
   return Status;

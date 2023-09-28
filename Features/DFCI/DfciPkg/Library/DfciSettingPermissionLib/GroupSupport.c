@@ -178,6 +178,7 @@ FindGroup (
   LIST_ENTRY             *Link;
   DFCI_GROUP_LIST_ENTRY  *Group = NULL;
 
+  DEBUG ((DEBUG_INFO, "FindGroup - (%a)\n", Id));
   EFI_LIST_FOR_EACH (Link, &mGroupList) {
     Group = GROUP_LIST_ENTRY_FROM_GROUP_LINK (Link);
     if (0 == AsciiStrnCmp (Group->GroupId, Id, DFCI_MAX_ID_LEN)) {

@@ -52,11 +52,14 @@ InitializeModeTable (
   UINT32                                MaxHRes = 800;
   UINTN                                 Size    = 0;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   if (Gop == NULL) {
+    DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
     return;
   }
 
   if (!mModeTableInitialized) {
+    DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
     mVgaTextModeColumn       = 100; // Standard VGA resolution with
     mVgaTextModeRow          = 31;  // EFI standard glyphs
     mVgaHorizontalResolution = 800;
@@ -68,10 +71,12 @@ InitializeModeTable (
     mNativeVerticalResolution   = 600;
 
     if (Gop != NULL) {
+      DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
       for (Indx = 0; Indx < Gop->Mode->MaxMode; Indx++) {
         Status = Gop->QueryMode (Gop, Indx, &Size, &Info);
         if (!EFI_ERROR (Status)) {
           if (MaxHRes < Info->HorizontalResolution) {
+            DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
             mNativeHorizontalResolution = Info->HorizontalResolution;
             mNativeVerticalResolution   = Info->VerticalResolution;
             MaxHRes                     = Info->HorizontalResolution;
@@ -86,7 +91,9 @@ InitializeModeTable (
       }
 
       mNativeTextModeColumn = mNativeHorizontalResolution / EFI_GLYPH_WIDTH;
+      DEBUG ((DEBUG_ERROR, "%a mNativeTextModeColumn = %d\n", __FUNCTION__, mNativeTextModeColumn));
       mNativeTextModeRow    = mNativeVerticalResolution / EFI_GLYPH_HEIGHT;
+      DEBUG ((DEBUG_ERROR, "%a mNativeTextModeRow = %d\n", __FUNCTION__, mNativeTextModeRow));
     }
   }
 }
@@ -118,37 +125,53 @@ SetGraphicsConsoleMode (
   //
   // Get current video resolution and text mode
   //
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   Status = gBS->HandleProtocol (
                   gST->ConsoleOutHandle,
                   &gEfiGraphicsOutputProtocolGuid,
                   (VOID **)&GraphicsOutput
                   );
+  DEBUG ((DEBUG_ERROR, "%a gBS->HandleProtocol:&gEfiGraphicsOutputProtocolGuid status:%r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     GraphicsOutput = NULL;
     Status         = gBS->LocateProtocol (&gEfiGraphicsOutputProtocolGuid, NULL, (VOID **)&GraphicsOutput);
   }
 
+  DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->Info->Version = %d\n", __FUNCTION__, GraphicsOutput->Mode->Info->Version));
+  DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->Info->HorizontalResolution = %d\n", __FUNCTION__, GraphicsOutput->Mode->Info->HorizontalResolution));
+  DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->Info->VerticalResolution = %d\n", __FUNCTION__, GraphicsOutput->Mode->Info->VerticalResolution));
+  DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->Info->PixelInformation = %d\n", __FUNCTION__, GraphicsOutput->Mode->Info->PixelInformation));
+  DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->Info->PixelsPerScanLine = %d\n", __FUNCTION__, GraphicsOutput->Mode->Info->PixelsPerScanLine));
+  DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->MaxMode = %d\n", __FUNCTION__, GraphicsOutput->Mode->MaxMode));
+  DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->Mode = %d\n", __FUNCTION__, GraphicsOutput->Mode->Mode));
+  DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->SizeOfInfo = %d\n", __FUNCTION__, GraphicsOutput->Mode->SizeOfInfo));
+
   if (EFI_ERROR (Status) || (GraphicsOutput == NULL)) {
     return EFI_UNSUPPORTED;
   }
-
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   Status = gBS->HandleProtocol (
                   gST->ConsoleOutHandle,
                   &gEfiSimpleTextOutProtocolGuid,
                   (VOID **)&SimpleTextOut
                   );
+  DEBUG ((DEBUG_ERROR, "%a gBS->HandleProtocol:&gEfiSimpleTextOutProtocolGuid status:%r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     return EFI_UNSUPPORTED;
   }
 
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   InitializeModeTable (GraphicsOutput);
   MaxGopMode  = 0;
   MaxTextMode = 0;
 
+  DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
+  DEBUG ((DEBUG_ERROR, "%a Mode = %x\n", __FUNCTION__, Mode));
   if (Mode == GCM_LOW_RES) {
     //
     // The required resolution and text mode is setup mode.
     //
+    DEBUG ((DEBUG_ERROR, "%a Mode = GCM_LOW_RES\n", __FUNCTION__));
     NewHorizontalResolution = mVgaHorizontalResolution;
     NewVerticalResolution   = mVgaVerticalResolution;
     NewColumns              = mVgaTextModeColumn;
@@ -157,6 +180,7 @@ SetGraphicsConsoleMode (
     //
     // The required resolution and text mode is boot mode.
     //
+    DEBUG ((DEBUG_ERROR, "%a Mode = GCM_NATIVE_RES\n", __FUNCTION__));
     NewHorizontalResolution = mNativeHorizontalResolution;
     NewVerticalResolution   = mNativeVerticalResolution;
     NewColumns              = mNativeTextModeColumn;
@@ -167,8 +191,17 @@ SetGraphicsConsoleMode (
     goto Exit;
   }
 
+  DEBUG ((DEBUG_ERROR, "%a NewHorizontalResolution = %d\n", __FUNCTION__, NewHorizontalResolution));
+  DEBUG ((DEBUG_ERROR, "%a NewVerticalResolution = %d\n", __FUNCTION__, NewVerticalResolution));
+  DEBUG ((DEBUG_ERROR, "%a NewColumns = %d\n", __FUNCTION__, NewColumns));
+  DEBUG ((DEBUG_ERROR, "%a NewRows = %d\n", __FUNCTION__, NewRows));
+
+  DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
   MaxGopMode  = GraphicsOutput->Mode->MaxMode;
   MaxTextMode = SimpleTextOut->Mode->MaxMode;
+
+  DEBUG ((DEBUG_ERROR, "%a MaxGopMode = %d\n", __FUNCTION__, MaxGopMode));
+  DEBUG ((DEBUG_ERROR, "%a MaxTextMode = %d\n", __FUNCTION__, MaxTextMode));
 
   //
   // 1. If current video resolution is same with required video resolution,
@@ -177,6 +210,7 @@ SetGraphicsConsoleMode (
   //    1.2. If current text mode is different from required text mode, text mode need be changed.
   // 2. If current video resolution is different from required video resolution, we need restart whole console drivers.
   //
+  DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
   for (ModeNumber = 0; ModeNumber < MaxGopMode; ModeNumber++) {
     Status = GraphicsOutput->QueryMode (
                                GraphicsOutput,
@@ -184,6 +218,14 @@ SetGraphicsConsoleMode (
                                &SizeOfInfo,
                                &Info
                                );
+    DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->QueryMode:GraphicsOutput status:%r\n", __FUNCTION__, Status));
+
+    DEBUG ((DEBUG_ERROR, "%a Info->HorizontalResolution = %d\n", __FUNCTION__, Info->HorizontalResolution));
+    DEBUG ((DEBUG_ERROR, "%a Info->VerticalResolution = %d\n", __FUNCTION__, Info->VerticalResolution));
+
+    DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->Info->HorizontalResolution = %d\n", __FUNCTION__, GraphicsOutput->Mode->Info->HorizontalResolution));
+    DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->Info->VerticalResolution = %d\n", __FUNCTION__, GraphicsOutput->Mode->Info->VerticalResolution));
+
     if (!EFI_ERROR (Status)) {
       if ((Info->HorizontalResolution == NewHorizontalResolution) &&
           (Info->VerticalResolution == NewVerticalResolution))
@@ -194,12 +236,14 @@ SetGraphicsConsoleMode (
           //
           // Current resolution is same with required resolution, check if text mode need be set
           //
+          DEBUG ((DEBUG_ERROR, "%a a001\n", __FUNCTION__));
           Status = SimpleTextOut->QueryMode (SimpleTextOut, SimpleTextOut->Mode->Mode, &CurrentColumn, &CurrentRow);
           ASSERT_EFI_ERROR (Status);
           if ((CurrentColumn == NewColumns) && (CurrentRow == NewRows)) {
             //
             // If current text mode is same with required text mode. Do nothing
             //
+            DEBUG ((DEBUG_ERROR, "%a a002\n", __FUNCTION__));
             FreePool (Info);
             Status = EFI_SUCCESS;
             goto Exit;
@@ -207,6 +251,7 @@ SetGraphicsConsoleMode (
             //
             // If current text mode is different from required text mode.  Set new video mode
             //
+            DEBUG ((DEBUG_ERROR, "%a a003\n", __FUNCTION__));
             for (Index = 0; Index < MaxTextMode; Index++) {
               Status = SimpleTextOut->QueryMode (SimpleTextOut, Index, &CurrentColumn, &CurrentRow);
               if (!EFI_ERROR (Status)) {
@@ -214,6 +259,7 @@ SetGraphicsConsoleMode (
                   //
                   // Required text mode is supported, set it.
                   //
+                  DEBUG ((DEBUG_ERROR, "%a a004\n", __FUNCTION__));
                   Status = SimpleTextOut->SetMode (SimpleTextOut, Index);
                   ASSERT_EFI_ERROR (Status);
                   //
@@ -234,6 +280,7 @@ SetGraphicsConsoleMode (
               //
               // If requrired text mode is not supported, return error.
               //
+              DEBUG ((DEBUG_ERROR, "%a a005\n", __FUNCTION__));
               FreePool (Info);
               Status = EFI_UNSUPPORTED;
               goto Exit;
@@ -244,17 +291,22 @@ SetGraphicsConsoleMode (
           // If current video resolution is not same with the new one, set new video resolution.
           // In this case, the driver which produces simple text out need be restarted.
           //
+          DEBUG ((DEBUG_ERROR, "%a a006\n", __FUNCTION__));
           Status = GraphicsOutput->SetMode (GraphicsOutput, ModeNumber);
+          DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->SetMode status:%r\n", __FUNCTION__, Status));
+          DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->Info->HorizontalResolution = %d\n", __FUNCTION__, GraphicsOutput->Mode->Info->HorizontalResolution));
+          DEBUG ((DEBUG_ERROR, "%a GraphicsOutput->Mode->Info->VerticalResolution = %d\n", __FUNCTION__, GraphicsOutput->Mode->Info->VerticalResolution));
           if (!EFI_ERROR (Status)) {
             FreePool (Info);
             break;
           }
         }
       }
-
+      DEBUG ((DEBUG_ERROR, "%a a007\n", __FUNCTION__));
       FreePool (Info);
     }
   }
+  DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
 
   if (ModeNumber == MaxGopMode) {
     //
@@ -263,7 +315,7 @@ SetGraphicsConsoleMode (
     Status = EFI_UNSUPPORTED;
     goto Exit;
   }
-
+  DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
   //
   // Set PCD to Inform GraphicsConsole to change video resolution.
   // Set PCD to Inform Consplitter to change text mode.
@@ -276,7 +328,7 @@ SetGraphicsConsoleMode (
   ASSERT_EFI_ERROR (Status);
   Status = PcdSet32S (PcdConOutRow, NewRows);
   ASSERT_EFI_ERROR (Status);
-
+  DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
   //
   // Video mode is changed, so restart graphics console driver and higher level driver.
   // Reconnect graphics console driver and higher level driver.
@@ -289,6 +341,11 @@ SetGraphicsConsoleMode (
                   &HandleCount,
                   &HandleBuffer
                   );
+  DEBUG ((DEBUG_ERROR, "%a gBS->LocateHandleBuffer:&gEfiSimpleTextOutProtocolGuid status:%r\n", __FUNCTION__, Status));
+  if (HandleBuffer != NULL) {
+    DEBUG ((DEBUG_ERROR, "%a HandleBuffer != NULL\n", __FUNCTION__));
+    DEBUG ((DEBUG_ERROR, "%a HandleCount = %d\n", __FUNCTION__, HandleCount));
+  }
   if (!EFI_ERROR (Status)) {
     for (Index = 0; Index < HandleCount; Index++) {
       gBS->DisconnectController (HandleBuffer[Index], NULL, NULL);
@@ -297,13 +354,14 @@ SetGraphicsConsoleMode (
     for (Index = 0; Index < HandleCount; Index++) {
       gBS->ConnectController (HandleBuffer[Index], NULL, NULL, TRUE);
     }
-
+    DEBUG ((DEBUG_ERROR, "%a ddd\n", __FUNCTION__));
     if (HandleBuffer != NULL) {
       FreePool (HandleBuffer);
     }
   }
 
   Status = EFI_SUCCESS;
+  DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
 
 Exit:
   return Status;

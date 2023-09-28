@@ -1198,7 +1198,7 @@ InitializeRenderingEngine (
 {
   EFI_STATUS  Status = EFI_SUCCESS;
 
-  DEBUG ((DEBUG_INFO, "INFO [SRE]: Initializing the Rendering Engine.\r\n"));
+  DEBUG ((DEBUG_ERROR, "INFO [SRE]: Initializing the Rendering Engine.\r\n"));
 
   // Configure initial Rendering Engine context.
   //
@@ -1242,7 +1242,7 @@ InitializeRenderingEngine (
     goto Exit;
   }
 
-  DEBUG ((DEBUG_INFO, "INFO [SRE]: Registered our own GOP protocol, Handle=0x%x, Status: %r\r\n", mSREGopHandle, Status));
+  DEBUG ((DEBUG_ERROR, "INFO [SRE]: Registered our own GOP protocol, Handle=0x%x, Status: %r\r\n", mSREGopHandle, Status));
 
   // Create a timer event to regularly sample active surface frames and confirm someone hasn't used the framebuffer pointer directly to step on the surface.
   //

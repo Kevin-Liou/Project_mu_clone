@@ -57,6 +57,7 @@ Init (
   EFI_STATUS        Status = EFI_SUCCESS;
   ZERO_TOUCH_STATE  ZeroTouchState;
 
+  DEBUG ((DEBUG_INFO, "%a IdentityAndAuthManagerDxe Start.\n", __FUNCTION__));
   Status = gBS->LocateProtocol (&gDfciSettingPermissionsProtocolGuid, NULL, (VOID **)&mDfciSettingsPermissionProtocol);
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a - DfciSystemSettingPermissionsProtocolGuid not available. %r\n", __FUNCTION__, Status));

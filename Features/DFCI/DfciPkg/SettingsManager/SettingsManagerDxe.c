@@ -103,6 +103,8 @@ SettingManagerOnStartOfBds (
 {
   EFI_STATUS  Status;
 
+  DEBUG ((DEBUG_ERROR, "%a 111111\n", __FUNCTION__));
+
   gBS->CloseEvent (Event);
 
   DEBUG_CODE_BEGIN ();
@@ -119,7 +121,9 @@ SettingManagerOnStartOfBds (
                   NULL
                   );
 
-  if (EFI_ERROR (Status)) {
+  DEBUG ((DEBUG_ERROR, "%a - Install DFCI Setting Access Protocol. %r\n", __FUNCTION__, Status));
+
+  if (0) {
     DEBUG ((DEBUG_ERROR, "Failed to Install DFCI Settings Access Protocol. %r\n", Status));
   }
 }
@@ -368,6 +372,8 @@ Init (
   EFI_EVENT   InitEvent;
   EFI_STATUS  Status;
 
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
+
   // Install Setting Provider Support Protocol and Permission Protocol
   Status = gBS->InstallMultipleProtocolInterfaces (
                   &ImageHandle,
@@ -379,6 +385,8 @@ Init (
                   &mApplySettingsProtocol,
                   NULL
                   );
+
+  DEBUG ((DEBUG_ERROR, "Failed to Install DFCI Settings Provider Support/Permission Protocol/Settings Apply. %r\n", Status));
 
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "Failed to Install DFCI Settings Provider Support/Permission Protocol/Settings Apply. %r\n", Status));
@@ -396,6 +404,8 @@ Init (
                   &gDfciStartOfBdsNotifyGuid,
                   &InitEvent
                   );
+
+  DEBUG ((DEBUG_ERROR, "%a - Create Event Ex for End of Dxe. %r\n", __FUNCTION__, Status));
 
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a - Create Event Ex for End of Dxe. %r\n", __FUNCTION__, Status));

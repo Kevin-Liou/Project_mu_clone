@@ -161,6 +161,7 @@ HiiAddPackages (
   UINT32                       Length;
   UINT8                        *Data;
 
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   ASSERT (PackageListGuid != NULL);
 
   //
@@ -176,6 +177,7 @@ HiiAddPackages (
   // If there are no packages in the variable argument list or all the packages
   // are empty, then return a NULL HII Handle
   //
+  DEBUG ((DEBUG_ERROR, "%a 222 Length=%d\n", __FUNCTION__, Length));
   if (Length == 0) {
     return NULL;
   }
@@ -188,6 +190,7 @@ HiiAddPackages (
   //
   // Allocate the storage for the entire Package List
   //
+  DEBUG ((DEBUG_ERROR, "%a 333 Length=%d\n", __FUNCTION__, Length));
   PackageListHeader = AllocateZeroPool (Length);
 
   //
@@ -200,6 +203,7 @@ HiiAddPackages (
   //
   // Fill in the GUID and Length of the Package List Header
   //
+  DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
   CopyGuid (&PackageListHeader->PackageListGuid, PackageListGuid);
   PackageListHeader->PackageLength = Length;
 
@@ -211,6 +215,7 @@ HiiAddPackages (
   //
   // Copy the data from each package in the variable argument list
   //
+  DEBUG ((DEBUG_ERROR, "%a 555 Data=%d\n", __FUNCTION__, Data));
   for (VA_START (Args, DeviceHandle); (Package = VA_ARG (Args, UINT32 *)) != NULL; ) {
     Length = ReadUnaligned32 (Package) - sizeof (UINT32);
     CopyMem (Data, Package + 1, Length);
@@ -222,17 +227,20 @@ HiiAddPackages (
   //
   // Append a package of type EFI_HII_PACKAGE_END to mark the end of the package list
   //
+  DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
   CopyMem (Data, &mEndOfPakageList, sizeof (mEndOfPakageList));
 
   //
   // Register the package list with the HII Database
   //
+  DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
   Status = gHiiDatabase->NewPackageList (
                            gHiiDatabase,
                            PackageListHeader,
                            DeviceHandle,
                            &HiiHandle
                            );
+  DEBUG ((DEBUG_ERROR, "%a gHiiDatabase->NewPackageList status:%r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     HiiHandle = NULL;
   }
@@ -245,6 +253,7 @@ HiiAddPackages (
   //
   // Return the new HII Handle
   //
+  DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
   return HiiHandle;
 }
 
@@ -308,6 +317,7 @@ HiiGetHiiHandles (
   // Retrieve the size required for the buffer of all HII handles.
   //
   HandleBufferLength = 0;
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   Status             = gHiiDatabase->ListPackageLists (
                                        gHiiDatabase,
                                        EFI_HII_PACKAGE_TYPE_ALL,
@@ -316,6 +326,7 @@ HiiGetHiiHandles (
                                        &TempHiiHandleBuffer
                                        );
 
+  DEBUG ((DEBUG_ERROR, "%a gHiiDatabase->ListPackageLists status:%r\n", __FUNCTION__, Status));
   //
   // If ListPackageLists() returns EFI_SUCCESS for a zero size,
   // then there are no HII handles in the HII database.  If ListPackageLists()
@@ -327,23 +338,27 @@ HiiGetHiiHandles (
     // Return NULL if the size can not be retrieved, or if there are no HII
     // handles in the HII Database
     //
+    DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
     return NULL;
   }
 
   //
   // Allocate the array of HII handles to hold all the HII Handles and a NULL terminator
   //
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   HiiHandleBuffer = AllocateZeroPool (HandleBufferLength + sizeof (EFI_HII_HANDLE));
   if (HiiHandleBuffer == NULL) {
     //
     // Return NULL if allocation fails.
     //
+    DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
     return NULL;
   }
 
   //
   // Retrieve the array of HII Handles in the HII Database
   //
+  DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
   Status = gHiiDatabase->ListPackageLists (
                            gHiiDatabase,
                            EFI_HII_PACKAGE_TYPE_ALL,
@@ -351,10 +366,12 @@ HiiGetHiiHandles (
                            &HandleBufferLength,
                            HiiHandleBuffer
                            );
+  DEBUG ((DEBUG_ERROR, "%a gHiiDatabase->ListPackageLists status:%r\n", __FUNCTION__, Status));
   if (EFI_ERROR (Status)) {
     //
     // Free the buffer and return NULL if the HII handles can not be retrieved.
     //
+    DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
     FreePool (HiiHandleBuffer);
     return NULL;
   }
@@ -363,20 +380,25 @@ HiiGetHiiHandles (
     //
     // Return the NULL terminated array of HII handles in the HII Database
     //
+    DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
     return HiiHandleBuffer;
   } else {
+    DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
     for (Index1 = 0, Index2 = 0; HiiHandleBuffer[Index1] != NULL; Index1++) {
       Status = InternalHiiExtractGuidFromHiiHandle (HiiHandleBuffer[Index1], &Guid);
       ASSERT_EFI_ERROR (Status);
       if (CompareGuid (&Guid, PackageListGuid)) {
+        DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
         HiiHandleBuffer[Index2++] = HiiHandleBuffer[Index1];
       }
     }
 
     if (Index2 > 0) {
+      DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
       HiiHandleBuffer[Index2] = NULL;
       return HiiHandleBuffer;
     } else {
+      DEBUG ((DEBUG_ERROR, "%a bbb\n", __FUNCTION__));
       FreePool (HiiHandleBuffer);
       return NULL;
     }

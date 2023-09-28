@@ -737,6 +737,7 @@ BdsEntry (
   //
   // Fill in FirmwareVendor and FirmwareRevision from PCDs
   //
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   FirmwareVendor      = (CHAR16 *)PcdGetPtr (PcdFirmwareVendor);
   gST->FirmwareVendor = AllocateRuntimeCopyPool (StrSize (FirmwareVendor), FirmwareVendor);
   ASSERT (gST->FirmwareVendor != NULL);
@@ -751,6 +752,7 @@ BdsEntry (
   //
   // Validate Variable.
   //
+  DEBUG ((DEBUG_ERROR, "%a 222\n", __FUNCTION__));
   BdsFormalizeEfiGlobalVariable ();
 
   //
@@ -764,7 +766,7 @@ BdsEntry (
       ASSERT_EFI_ERROR (Status);
     }
   }
-
+  DEBUG ((DEBUG_ERROR, "%a 333\n", __FUNCTION__));
   InitializeHwErrRecSupport ();
 
   //
@@ -776,6 +778,7 @@ BdsEntry (
     // If time out value equal 0xFFFF, no need set to 0xFFFF to variable area because UEFI specification
     // define same behavior between no value or 0xFFFF value for L"Timeout".
     //
+    DEBUG ((DEBUG_ERROR, "%a 444\n", __FUNCTION__));
     BdsDxeSetVariableAndReportStatusCodeOnError (
       EFI_TIME_OUT_VARIABLE_NAME,
       &gEfiGlobalVariableGuid,
@@ -811,6 +814,7 @@ BdsEntry (
   // Cache the "BootNext" NV variable before calling any PlatformBootManagerLib APIs
   // This could avoid the "BootNext" set by PlatformBootManagerLib be consumed in this boot.
   //
+  DEBUG ((DEBUG_ERROR, "%a 555\n", __FUNCTION__));
   GetEfiGlobalVariable2 (EFI_BOOT_NEXT_VARIABLE_NAME, (VOID **)&BootNext, &DataSize);
   if (DataSize != sizeof (UINT16)) {
     if (BootNext != NULL) {
@@ -823,6 +827,7 @@ BdsEntry (
   //
   // Initialize the platform language variables
   //
+  DEBUG ((DEBUG_ERROR, "%a 666\n", __FUNCTION__));
   InitializeLanguage (TRUE);
 
   FilePath = FileDevicePath (NULL, EFI_REMOVABLE_MEDIA_FILE_NAME);
@@ -848,6 +853,7 @@ BdsEntry (
   // a short-form File Path Media Device Path containing the platform default
   // file path for removable media if the platform supports Platform Recovery.
   //
+  DEBUG ((DEBUG_ERROR, "%a 777\n", __FUNCTION__));
   if (PcdGetBool (PcdPlatformRecoverySupport)) {
     LoadOptions = EfiBootManagerGetLoadOptions (&LoadOptionCount, LoadOptionTypePlatformRecovery);
     if (EfiBootManagerFindLoadOption (&PlatformDefaultBootOption, LoadOptions, LoadOptionCount) == -1) {
@@ -874,6 +880,7 @@ BdsEntry (
   //
   // Report Status Code to indicate connecting drivers will happen
   //
+  DEBUG ((DEBUG_ERROR, "%a 888\n", __FUNCTION__));
   REPORT_STATUS_CODE (
     EFI_PROGRESS_CODE,
     (EFI_SOFTWARE_DXE_BS_DRIVER | EFI_SW_DXE_BS_PC_BEGIN_CONNECTING_DRIVERS)
@@ -883,6 +890,7 @@ BdsEntry (
   // Initialize ConnectConIn event before calling platform code.
   //
   if (PcdGetBool (PcdConInConnectOnDemand)) {
+    DEBUG ((DEBUG_ERROR, "%a 888999\n", __FUNCTION__));
     Status = gBS->CreateEventEx (
                     EVT_NOTIFY_SIGNAL,
                     TPL_CALLBACK,
@@ -905,6 +913,7 @@ BdsEntry (
   // > Signal ReadyToLock event
   // > Authentication action: 1. connect Auth devices; 2. Identify auto logon user.
   //
+  DEBUG ((DEBUG_ERROR, "%a 999\n", __FUNCTION__));
   PERF_INMODULE_BEGIN ("PlatformBootManagerBeforeConsole");
   PlatformBootManagerBeforeConsole ();
   PERF_INMODULE_END ("PlatformBootManagerBeforeConsole");
@@ -912,11 +921,13 @@ BdsEntry (
   //
   // Initialize hotkey service
   //
+  DEBUG ((DEBUG_ERROR, "%a 000\n", __FUNCTION__));
   EfiBootManagerStartHotkeyService (&HotkeyTriggered);
 
   //
   // Execute Driver Options
   //
+  DEBUG ((DEBUG_ERROR, "%a aaa\n", __FUNCTION__));
   LoadOptions = EfiBootManagerGetLoadOptions (&LoadOptionCount, LoadOptionTypeDriver);
   if ((LoadOptionCount != 0) && (LoadOptions != NULL)) {
     ProcessLoadOptions (LoadOptions, LoadOptionCount);
@@ -926,17 +937,23 @@ BdsEntry (
   //
   // Connect consoles
   //
+  DEBUG ((DEBUG_ERROR, "%a bbb\n", __FUNCTION__));
   PERF_INMODULE_BEGIN ("EfiBootManagerConnectAllDefaultConsoles");
+  DEBUG ((DEBUG_ERROR, "%a bbb001\n", __FUNCTION__));
   if (PcdGetBool (PcdConInConnectOnDemand)) {
+    DEBUG ((DEBUG_ERROR, "%a bbb002\n", __FUNCTION__));
     EfiBootManagerConnectConsoleVariable (ConOut);
+    DEBUG ((DEBUG_ERROR, "%a bbb003\n", __FUNCTION__));
     EfiBootManagerConnectConsoleVariable (ErrOut);
     //
     // Do not connect ConIn devices when lazy ConIn feature is ON.
     //
   } else {
+    DEBUG ((DEBUG_ERROR, "%a bbb004\n", __FUNCTION__));
     EfiBootManagerConnectAllDefaultConsoles ();
   }
 
+  DEBUG ((DEBUG_ERROR, "%a ccc\n", __FUNCTION__));
   PERF_INMODULE_END ("EfiBootManagerConnectAllDefaultConsoles");
 
   //
@@ -950,6 +967,7 @@ BdsEntry (
   // > Dispatch aditional option roms
   // > Special boot: e.g.: USB boot, enter UI
   //
+  DEBUG ((DEBUG_ERROR, "%a ddd\n", __FUNCTION__));
   PERF_INMODULE_BEGIN ("PlatformBootManagerAfterConsole");
   PlatformBootManagerAfterConsole ();
   PERF_INMODULE_END ("PlatformBootManagerAfterConsole");
@@ -958,6 +976,7 @@ BdsEntry (
   // If any component set PcdTestKeyUsed to TRUE because use of a test key
   // was detected, then display a warning message on the debug log and the console
   //
+  DEBUG ((DEBUG_ERROR, "%a eee\n", __FUNCTION__));
   if (PcdGetBool (PcdTestKeyUsed)) {
     DEBUG ((DEBUG_ERROR, "**********************************\n"));
     DEBUG ((DEBUG_ERROR, "**  WARNING: Test Key is used.  **\n"));
@@ -968,6 +987,7 @@ BdsEntry (
   //
   // Boot to Boot Manager Menu when EFI_OS_INDICATIONS_BOOT_TO_FW_UI is set. Skip HotkeyBoot
   //
+  DEBUG ((DEBUG_ERROR, "%a fff\n", __FUNCTION__));
   DataSize = sizeof (UINT64);
   Status   = gRT->GetVariable (
                     EFI_OS_INDICATIONS_VARIABLE_NAME,
@@ -1014,6 +1034,7 @@ BdsEntry (
   //
   // BootManagerMenu doesn't contain the correct information when return status is EFI_NOT_FOUND.
   //
+  DEBUG ((DEBUG_ERROR, "%a ggg\n", __FUNCTION__));
   BootManagerMenuStatus = EfiBootManagerGetBootManagerMenu (&BootManagerMenu);
 
   BootFwUi         = (BOOLEAN)((OsIndication & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) != 0);
@@ -1050,6 +1071,7 @@ BdsEntry (
     //
     // Directly enter the setup page.
     //
+    DEBUG ((DEBUG_ERROR, "%a hhh\n", __FUNCTION__));
     EfiBootManagerBoot (&BootManagerMenu);
   }
 
@@ -1057,6 +1079,7 @@ BdsEntry (
     //
     // Execute SysPrep####
     //
+    DEBUG ((DEBUG_ERROR, "%a iii\n", __FUNCTION__));
     LoadOptions = EfiBootManagerGetLoadOptions (&LoadOptionCount, LoadOptionTypeSysPrep);
     if ((LoadOptionCount != 0) && (LoadOptions != NULL)) {
       ProcessLoadOptions (LoadOptions, LoadOptionCount);
@@ -1066,17 +1089,20 @@ BdsEntry (
     //
     // Execute Key####
     //
+    DEBUG ((DEBUG_ERROR, "%a jjj\n", __FUNCTION__));
     PERF_INMODULE_BEGIN ("BdsWait");
     BdsWait (HotkeyTriggered);
     PERF_INMODULE_END ("BdsWait");
     //
     // BdsReadKeys() can be removed after all keyboard drivers invoke callback in timer callback.
     //
+    DEBUG ((DEBUG_ERROR, "%a kkk\n", __FUNCTION__));
     BdsReadKeys ();
 
+    DEBUG ((DEBUG_ERROR, "%a lll\n", __FUNCTION__));
     EfiBootManagerHotkeyBoot ();
 
-    PlatformBootManagerPriorityBoot (&BootNext);          // MSCHANGE 00076  Check for hard button boot selection
+    DEBUG ((DEBUG_ERROR, "%a mmm\n", __FUNCTION__));
 
     if (BootNext != NULL) {
       //
@@ -1097,6 +1123,7 @@ BdsEntry (
       //
       // Boot to "BootNext"
       //
+      DEBUG ((DEBUG_ERROR, "%a nnn\n", __FUNCTION__));
       UnicodeSPrint (BootNextVariableName, sizeof (BootNextVariableName), L"Boot%04x", *BootNext);
       Status = EfiBootManagerVariableToLoadOption (BootNextVariableName, &LoadOption);
       if (!EFI_ERROR (Status)) {
@@ -1116,6 +1143,7 @@ BdsEntry (
       }
     }
 
+    DEBUG ((DEBUG_ERROR, "%a ooo\n", __FUNCTION__));
     do {
       //
       // Retry to boot if any of the boot succeeds
@@ -1150,6 +1178,7 @@ BdsEntry (
     }
   }
 
+  DEBUG ((DEBUG_ERROR, "%a ppp\n", __FUNCTION__));
   EfiBootManagerFreeLoadOption (&PlatformDefaultBootOption);
 
   DEBUG ((DEBUG_ERROR, "[Bds] Unable to boot!\n"));

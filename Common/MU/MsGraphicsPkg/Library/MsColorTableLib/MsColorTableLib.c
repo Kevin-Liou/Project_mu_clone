@@ -232,5 +232,12 @@ MS_COLOR_TABLE  gMsColorTable = {
   .MasterFrameCellHoverColor   = MS_GRAPHICS_LIGHT_GRAY_2_COLOR,
   .MasterFrameCellSelectColor  = Quanta_3C434F,
   .MasterFrameCellGrayoutColor = MS_GRAPHICS_LIGHT_GRAY_2_COLOR,
-  .FormCanvasBackgroundColor   = Quanta_0C131A
+  .FormCanvasBackgroundColor   = Quanta_0C131A,
+
+  // Default Color
+  .RedColor                    = MS_GRAPHICS_RED_COLOR,
+  .WhiteColor                  = MS_GRAPHICS_WHITE_COLOR,
+  .GreenColor                  = MS_GRAPHICS_GREEN_COLOR,
+  .YellowColor                 = MS_GRAPHICS_YELLOW_COLOR,
+  .BlackColor                  = MS_GRAPHICS_BLACK_COLOR
 };

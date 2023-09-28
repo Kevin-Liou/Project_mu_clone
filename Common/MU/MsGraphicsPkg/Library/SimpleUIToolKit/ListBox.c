@@ -161,6 +161,44 @@ RenderCellCheckBox (
   return Status;
 }
 
+VOID
+RenderBatteryIcon (
+  IN  UINT32   OrigX,
+  IN  UINT32   OrigY,
+  IN  UINT32   Width,
+  IN  UINT32   Height,
+  IN  UINT8    BatteryLevel
+  )
+{
+  EFI_GRAPHICS_OUTPUT_BLT_PIXEL  *Color;
+
+  // Set the color based on the battery level.
+  if (BatteryLevel > 75) {
+    Color = &gMsColorTable.WhiteColor;
+  } else if (BatteryLevel > 50) {
+    Color = &gMsColorTable.GreenColor;
+  } else if (BatteryLevel > 25) {
+    Color = &gMsColorTable.YellowColor;
+  } else {
+    Color = &gMsColorTable.RedColor;
+  }
+
+  // Render the battery icon.
+  mUITSWM->BltWindow (
+             mUITSWM,
+             mClientImageHandle,
+             Color,
+             EfiBltVideoFill,
+             0,
+             0,
+             OrigX,
+             OrigY,
+             Width,
+             Height,
+             0
+             );
+}
+
 static
 EFI_STATUS
 RenderCellTrashcan (
@@ -1131,6 +1169,7 @@ new_ListBox (
 
   // Validate caller arguments.
   //
+  DEBUG ((DEBUG_ERROR, "%a 111\n", __FUNCTION__));
   ASSERT (NULL != FontInfo && NULL != NormalColor && NULL != HoverColor && NULL != SelectColor && NULL != CellData);
   if ((NULL == FontInfo) || (NULL == NormalColor) || (NULL == HoverColor) || (NULL == SelectColor) || (NULL == CellData)) {
     return NULL;

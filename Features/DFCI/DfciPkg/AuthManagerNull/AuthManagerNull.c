@@ -152,7 +152,7 @@ Init (
   // Install Auth Provider Support Protocol and Apply Identity Protocol
   Status = gBS->InstallMultipleProtocolInterfaces (
                   &mImageHandle,
-                  &gDfciAuthenticationProtocolGuid,
+                  &gDfciAuthenticationProtocolGuid, //9E919A78
                   &mAuthProtocol,
                   NULL
                   );

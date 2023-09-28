@@ -171,4 +171,13 @@ delete_ListBox (
   IN ListBox *this
   );
 
+VOID
+RenderBatteryIcon (
+  IN UINT32   OrigX,
+  IN UINT32   OrigY,
+  IN UINT32   Width,
+  IN UINT32   Height,
+  IN UINT8    BatteryLevel
+);
+
 #endif // _UIT_LIST_BOX_H_.

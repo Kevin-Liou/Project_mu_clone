@@ -56,7 +56,7 @@ DisplayBootGraphic (
   //
   Status = gBS->HandleProtocol (gST->ConsoleOutHandle, &gEfiGraphicsOutputProtocolGuid, (VOID **)&GraphicsOutput);
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_WARN, "%a - Failed to find GOP on ConsoleOutHandle. %r\n", __FUNCTION__, Status));
+    DEBUG ((DEBUG_ERROR, "%a - Failed to find GOP on ConsoleOutHandle. %r\n", __FUNCTION__, Status));
     // failed on console out.  Try globally within system
     Status = gBS->LocateProtocol (&gEfiGraphicsOutputProtocolGuid, NULL, (VOID **)&GraphicsOutput);
   }
@@ -71,7 +71,7 @@ DisplayBootGraphic (
   //
   Status = gBS->LocateProtocol (&gEdkiiBootLogo2ProtocolGuid, NULL, (VOID **)&BootLogo2);
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_WARN, "%a - Failed to find BootLogo2 Protocol. %r\n", __FUNCTION__, Status));
+    DEBUG ((DEBUG_ERROR, "%a - Failed to find BootLogo2 Protocol. %r\n", __FUNCTION__, Status));
     BootLogo2 = NULL;
   }
 
@@ -81,7 +81,7 @@ DisplayBootGraphic (
   if (gST->ConOut != NULL) {
     gST->ConOut->EnableCursor (gST->ConOut, FALSE);
   } else {
-    DEBUG ((DEBUG_WARN, "%a - ConOut is NULL, will not disable cursor\n", __FUNCTION__));
+    DEBUG ((DEBUG_ERROR, "%a - ConOut is NULL, will not disable cursor\n", __FUNCTION__));
   }
 
   SizeOfX = GraphicsOutput->Mode->Info->HorizontalResolution;
